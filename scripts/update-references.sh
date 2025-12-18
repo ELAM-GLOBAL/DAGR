@@ -9,7 +9,7 @@ ACTION=${1:-update}
 REPOS=(
   "carbon|https://github.com/carbon-design-system/carbon.git|main"
   "carbon-website|https://github.com/carbon-design-system/carbon-website.git|main"
-  "carbon-design-kit|https://github.com/carbon-design-system/carbon-design-kit.git|main"
+  "carbon-design-kit|https://github.com/carbon-design-system/carbon-design-kit.git|master"
   "carbon-charts|https://github.com/carbon-design-system/carbon-charts.git|main"
   "orange3|https://github.com/biolab/orange3.git|main"
 )
