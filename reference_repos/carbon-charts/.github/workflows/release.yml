@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    if:
+      github.actor != 'carbon-bot' && !startsWith(github.event.head_commit.message, 'skip-release')
+    name: Create release
+    runs-on: ubuntu-latest
+
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Set git user to carbon-bot
+        run: |
+          git config --global user.email "carbon@us.ibm.com"
+          git config --global user.name "carbon-bot"
+
+      - name: Use Node.js 22.x LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: 'yarn'
+
+      - name: Install dependencies 🔧
+        run: yarn install --immutable --check-cache
+
+      - name: Generate search index for docs website
+        run: npx lerna run build:search --scope @carbon/charts-docs
+
+      - name: Stage generated search index
+        run: git add packages/docs/src/searchIndex.ts
+
+      - name: Create version and change logs and commit to main
+        run: npx lerna version --yes --force-publish --conventional-commits --create-release github
+
+      - name: Build latest version's packages (including angular/dist) 🔧
+        run: |
+          yarn build
+          node scripts/update-angular-dependency-version.mjs
+
+      - name: Publish to npmjs registry and create Github release
+        run: |
+          npm config set //registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }} -q
+          npx lerna publish from-git --yes --force-publish
+
+      - name: Deploy documentation to Github Pages 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages # Branch for GitHub Pages
+          folder: pages # Folder containing documentation website
+          clean: true # Remove deleted files from the deploy branch

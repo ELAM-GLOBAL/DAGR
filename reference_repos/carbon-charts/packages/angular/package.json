@@ -1,0 +1,110 @@
+{
+	"name": "@carbon/charts-angular",
+	"version": "1.27.0",
+	"description": "Carbon Charts component library for Angular",
+	"exports": {
+		"./styles.min.css": "./styles.min.css",
+		"./styles.css": "./styles.css"
+	},
+	"sideEffects": false,
+	"type": "module",
+	"scripts": {
+		"ng": "ng",
+		"postinstall": "ibmtelemetry --config=telemetry.yml",
+		"file:md": "cp *.md dist",
+		"file:styles": "cp ../core/dist/styles.* dist",
+		"postbundle": "concurrently \"yarn:file:*\"",
+		"build": "ng build -c production && yarn postbundle",
+		"build:test": "ng build charts-angular-test",
+		"dev": "ng serve --port 3001",
+		"test:dom": "playwright test",
+		"test:dom:rebase": "playwright test --update-snapshots",
+		"lint": "ng lint --ignore-path ../../.prettierignore",
+		"format": "prettier . --write --ignore-path ../../.prettierignore"
+	},
+	"peerDependencies": {
+		"@angular/common": "^20.0.0",
+		"@angular/core": "^20.0.0"
+	},
+	"dependencies": {
+		"@carbon/charts": "workspace:*",
+		"@ibm/telemetry-js": "^1.9.1",
+		"tslib": "^2.8.1"
+	},
+	"devDependencies": {
+		"@angular/build": "^20.1.4",
+		"@angular/cli": "^20.1.4",
+		"@angular/common": "^20.1.4",
+		"@angular/compiler": "^20.1.4",
+		"@angular/compiler-cli": "^20.1.4",
+		"@angular/core": "^20.1.4",
+		"@angular/platform-browser": "^20.1.4",
+		"@angular/platform-browser-dynamic": "^20.1.4",
+		"@carbon/icons": "^11.64.0",
+		"@playwright/test": "^1.54.2",
+		"angular-eslint": "^20.1.1",
+		"concurrently": "^9.2.0",
+		"eslint": "^9.32.0",
+		"ng-packagr": "^20.1.0",
+		"prettier": "^3.6.2",
+		"typescript": ">=5.8.0 <5.9.0",
+		"typescript-eslint": "^8.38.0",
+		"zone.js": "~0.15.1"
+	},
+	"publishConfig": {
+		"tag": "next",
+		"directory": "dist",
+		"access": "public"
+	},
+	"homepage": "https://github.com/carbon-design-system/carbon-charts#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/carbon-design-system/carbon-charts.git",
+		"directory": "packages/angular"
+	},
+	"license": "Apache-2.0",
+	"author": "IBM",
+	"keywords": [
+		"charts",
+		"graphs",
+		"radar",
+		"gauge",
+		"donut",
+		"pie",
+		"sparkline",
+		"tree",
+		"treemap",
+		"heatmap",
+		"wordcloud",
+		"histogram",
+		"alluvial",
+		"geo",
+		"bar",
+		"bullet",
+		"scatter",
+		"meter",
+		"line",
+		"angular",
+		"component",
+		"carbon",
+		"ibm",
+		"svg",
+		"data",
+		"typescript"
+	],
+	"maintainers": [
+		{
+			"name": "Eliad Moosavi",
+			"email": "iliadm@ca.ibm.com",
+			"url": "https://github.com/theiliad"
+		}
+	],
+	"contributors": [
+		{
+			"name": "Eliad Moosavi",
+			"email": "iliadm@ca.ibm.com",
+			"url": "https://github.com/theiliad"
+		}
+	],
+	"gitHead": "f7037103474e53901678dd9e62095b0b1f0f62c4"
+}
