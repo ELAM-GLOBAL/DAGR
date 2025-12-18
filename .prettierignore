@@ -1,0 +1,16 @@
+# Root-level only
+.git
+.yarn
+.nx
+pages
+yarn.lock
+
+# All packages
+**/.angular
+**/.DS_Store
+**/.svelte-kit
+**/dist
+**/node_modules
+**/LICENSE.md
+**/playwright-report
+**/test-results

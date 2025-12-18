@@ -1,0 +1,86 @@
+name: Accessibility issue
+description: Report an accessibility or usability issue
+title: '[Accessibility]: '
+labels: [accessibility]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+  - type: input
+    id: name
+    attributes:
+      label: Application/Team
+      description: If you are from IBM, which application/team are you from?
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      multiple: true
+      options:
+        - Operating system
+        - Browser
+        - Automated testing tool and ruleset
+        - Assistive technology used to verify
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened? What did you expect to happen instead?
+    validations:
+      required: true
+  - type: input
+    id: wcag-issue
+    attributes:
+      label: What WCAG 2.1 checkpoint does the issue violate?
+    validations:
+      required: true
+  - type: textarea
+    id: version
+    attributes:
+      label: Version
+      description: What version of our packages are you using?
+      placeholder: e.g. `@carbon/charts@1.11.10`
+    validations:
+      required: true
+  - type: textarea
+    id: data-options
+    attributes:
+      label: Data & options used
+      description: Please provide examples of the data & options that you're using
+      render: js
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description:
+        Please copy and paste any relevant log output. This will be automatically formatted into
+        code, so no need for backticks.
+      render: js
+  - type: input
+    id: sandbox
+    attributes:
+      label: StackBlitz repro
+      description: >
+        Do you have a StackBlitz repro where we can see the issue?
+
+        **Most of our demos offer a StackBlitz example that can help you get started**
+        https://carbon-design-system.github.io/carbon-charts/
+      placeholder: ex. https://stackblitz.com/...
+    validations:
+      required: false
+  - type: dropdown
+    id: priority
+    attributes:
+      label: What priority level would this issue be in your opinion?
+      options:
+        - P0
+        - P1
+        - P2
+        - P3
+        - P4
+    validations:
+      required: true

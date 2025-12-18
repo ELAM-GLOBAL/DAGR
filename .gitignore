@@ -1,0 +1,21 @@
+# Monorepo root-level
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+.nx/
+pages/
+
+# Node modules, build artifacts
+**/node_modules
+**/.angular
+**/.DS_Store
+**/.svelte-kit
+**/dist
+**/demo
+
+# Playwright
+**/test-results/
+**/playwright-report/
+**/blob-report/
+**/playwright/.cache/
+.github/instructions/nx.instructions.md

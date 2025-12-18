@@ -1,0 +1,12 @@
+[build.environment]
+  NODE_VERSION = "22"
+
+[build]
+  publish = "pages/"
+  command = "./scripts/netlify.sh"
+
+[context.production.environment]
+	NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+	NODE_ENV = "production"
