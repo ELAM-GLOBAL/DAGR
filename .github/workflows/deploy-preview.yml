@@ -1,0 +1,78 @@
+name: deploy preview
+
+on:
+  pull_request_target:
+    branches:
+      - main
+
+jobs:
+  netlify:
+    if: github.repository == 'carbon-design-system/carbon-website'
+    runs-on: ubuntu-latest
+    environment:
+      name: Preview
+      url: ${{ steps.url_preview.outputs.NETLIFY_PREVIEW_URL }}
+    steps:
+      - name: Get user permissions
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            // This workflow installs, builds, and deploys untrusted (pr) code. To prevent
+            // security issues, this workflow will only run if the user (pr author) has
+            // admin or write permissions to this repo.
+            
+            const author = context.payload.pull_request.user.login;
+            core.info(`Getting the permission level for ${author} on the ${context.repo.owner}/${context.repo.repo} repo...`);
+            
+            const response = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: author
+            });
+
+            const role = response.data.role_name;
+            core.info(`${author} permission level is: ${role}`);
+            
+            if(role === "admin" || role === "write" || author === "carbon-automation[bot]") {
+              core.info(`${author} has sufficient permissions for deploy previews!`);
+              return;
+            } else {
+              core.setFailed(`${author} does not have sufficient permissions for deploy previews. Pull down and build locally to review this PR.`);
+              return;
+            }
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 20.x
+      - name: Install packages
+        run: yarn install --immutable --network-timeout 300000
+      - name: Build site without cache
+        run: yarn build:clean
+        env:
+          NODE_ENV: production
+          CI: true
+      - name: Deploy to Netlify
+        id: netlify_deploy
+        run: |
+          yarn netlify deploy \
+            --cwd=public \
+            --site=${{ secrets.NETLIFY_SITE_ID }} \
+            --auth=${{ secrets.NETLIFY_AUTH_TOKEN }} \
+            --alias=${{ github.event.number }} \
+            --message=${{ github.event.pull_request.issue_url }} \
+            --json \
+            > deploy_output.json
+      - name: Gather netlify deploy details
+        id: url_preview
+        run: |
+          NETLIFY_PREVIEW_URL=$(jq -r '.deploy_url' deploy_output.json)
+          echo "NETLIFY_PREVIEW_URL=$NETLIFY_PREVIEW_URL" >> "$GITHUB_OUTPUT"
+          echo "$NETLIFY_PREVIEW_URL" >> $GITHUB_STEP_SUMMARY
+          NETLIFY_LOGS_URL=$(jq -r '.logs' deploy_output.json)
+          echo "NETLIFY_LOGS_URL=$NETLIFY_LOGS_URL" >> "$GITHUB_OUTPUT"
+          echo "$NETLIFY_LOGS_URL" >> $GITHUB_STEP_SUMMARY
+          echo "$(jq -c . < ./deploy_output.json)" >> $GITHUB_STEP_SUMMARY
+  

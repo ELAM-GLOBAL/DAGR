@@ -1,0 +1,146 @@
+import HomepageTemplate from '../components/Homepage.js';
+export default HomepageTemplate;
+
+<Row className="image-card-group">
+<Column colMd={4} colLg={4} noGutterSm>
+    
+  <ImageCard
+      title="Design"
+      titleColor="dark"
+      aspectRatio="1:1"
+      href="https://carbondesignsystem.com/designing/get-started"
+      actionIcon="arrowRight"
+      iconColor="dark"
+      >
+
+![Design](/homepage/images/homepage-design.png)
+
+  </ImageCard>
+</Column>
+<Column colMd={4} colLg={4} noGutterSm>
+    <ImageCard
+      title="Develop"
+      aspectRatio="1:1"
+      href="https://carbondesignsystem.com/developing/get-started"
+      actionIcon="arrowRight"
+      titleColor="dark"
+      iconColor="dark"
+      >
+
+![Develop](/homepage/images/homepage-develop.png)
+
+  </ImageCard>
+</Column>
+<Column colMd={4} colLg={4} noGutterSm>
+      <ImageCard
+      title="Migrate"
+      aspectRatio="1:1"
+      href="https://carbondesignsystem.com/migrating/guide/overview/"
+      actionIcon="arrowRight"
+      titleColor="dark"
+      iconColor="dark"
+      >
+
+![Migrate](/homepage/images/homepage-migration.png)
+
+  </ImageCard>
+</Column>
+</Row>
+
+### Learn about Carbon
+
+New to Carbon? Take a moment to explore what we're all about.
+
+<Row className="resource-card-group-3-across">
+  <Column colLg={4} colMd={4} noGutterSm>
+    <ResourceCard
+      subTitle="What is Carbon?"
+      href="/all-about-carbon/what-is-carbon/"
+      actionIcon="arrowRight">
+      <MdxIcon name="carbon" />
+    </ResourceCard>
+  </Column>
+  <Column colLg={4} colMd={4} noGutterSm>
+    <ResourceCard
+      subTitle="The Carbon ecosystem"
+      href="/all-about-carbon/the-carbon-ecosystem/"
+      actionIcon="arrowRight">
+      <MdxIcon name="carbon" />
+    </ResourceCard>
+  </Column>
+</Row>
+
+### Explore libraries
+
+The component libraries give developers and designers a collection of reusable
+components for building websites and user interfaces.
+
+<Row className="resource-card-group-3-across">
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Figma kit"
+    href="/designing/kits/figma"
+    >
+      <MdxIcon name="figma" />
+  </ResourceCard>
+</Column>  
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Sketch kits"
+    href="/designing/kits/sketch"
+    >
+      <MdxIcon name="sketch" />
+  </ResourceCard>
+</Column>
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Carbon React components"
+    href="https://github.com/carbon-design-system/carbon/tree/main/packages/react"
+    >
+
+<MdxIcon name="github" />
+
+  </ResourceCard>
+</Column>
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Carbon Angular components"
+    href="https://github.com/IBM/carbon-components-angular"
+    >
+
+<MdxIcon name="github" />
+
+  </ResourceCard>
+</Column>
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Carbon Vue components"
+    href="https://github.com/carbon-design-system/carbon-components-vue"
+    >
+
+<MdxIcon name="github" />
+
+  </ResourceCard>
+</Column>
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Carbon Svelte components"
+    href="https://github.com/IBM/carbon-components-svelte"
+    >
+    <MdxIcon name="github" />
+  </ResourceCard>
+</Column>
+
+<Column colLg={4} colMd={4} noGutterSm>
+  <ResourceCard
+    subTitle="Carbon Web Components"
+    href="https://github.com/carbon-design-system/carbon/tree/main/packages/web-components"
+    >
+    <MdxIcon name="github" />
+  </ResourceCard>
+</Column>
+</Row>
+
+### Latest news and articles
+
+<MediumPosts postLimit={3} cardProps={{ color: 'light' }} />
