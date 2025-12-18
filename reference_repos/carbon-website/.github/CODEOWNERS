@@ -1,0 +1,23 @@
+# Default to system one design and one dev
+
+* @carbon-design-system/developers-system @carbon-design-system/design
+
+# Diana Tran is the owner for Sustainability Software Patterns
+
+src/pages/community/patterns/login-pattern/*  @dianatran18 @lukefirth
+
+# Eliad Moosavi and Natasha Decoste are the code owners for Data Visualization
+
+src/pages/data-visualization/* @theiliad # @natashadecoste
+
+# Zvonimir Fras for Angular tutorial
+
+/src/pages/tutorial/angular/* @zvonimirfras
+
+# Lee Chase for Vue tutorial
+
+/src/pages/tutorial/vue/* @lee-chase
+
+# Lee Chase for Web components tutorial
+
+/src/pages/tutorial/web-components/* @lee-chase

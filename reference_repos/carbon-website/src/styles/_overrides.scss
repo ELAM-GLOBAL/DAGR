@@ -1,0 +1,11 @@
+[class^='FourOhFour-module--container'] {
+  margin-top: 3rem;
+}
+
+// allow tooltips to be visible outside edge of table
+// table needs overflow at mobile to scroll
+.page-table__container {
+  @include breakpoint('md') {
+    overflow: visible;
+  }
+}
