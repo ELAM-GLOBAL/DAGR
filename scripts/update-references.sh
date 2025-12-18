@@ -11,7 +11,7 @@ REPOS=(
   "carbon-website|https://github.com/carbon-design-system/carbon-website.git|main"
   "carbon-design-kit|https://github.com/carbon-design-system/carbon-design-kit.git|master"
   "carbon-charts|https://github.com/carbon-design-system/carbon-charts.git|main"
-  "orange3|https://github.com/biolab/orange3.git|main"
+  "orange3|https://github.com/biolab/orange3.git|master"
 )
 
 mkdir -p reference_repos
