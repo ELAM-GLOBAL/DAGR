@@ -1,0 +1,259 @@
+/**
+ * Copyright IBM Corp. 2024
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { __decorate } from 'tslib';
+import { classMap } from 'lit/directives/class-map.js';
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
+import { prefix } from '../../globals/settings.js';
+import { iconLoader } from '../../globals/internal/icon-loader.js';
+import FocusMixin from '../../globals/mixins/focus.js';
+import WarningFilled16 from '@carbon/icons/es/warning--filled/16.js';
+import WarningAltFilled16 from '@carbon/icons/es/warning--alt--filled/16.js';
+import styles from './slider.scss.js';
+import { carbonElement } from '../../globals/decorators/carbon-element.js';
+
+/**
+ * Copyright IBM Corp. 2019, 2023
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+/**
+ * The `<input>` box for slider.
+ *
+ * @element cds-custom-slider-input
+ * @fires cds-custom-slider-input-changed - The custom event fired after the value is changed by user gesture.
+ */
+let CDSSliderInput = class CDSSliderInput extends FocusMixin(LitElement) {
+    constructor() {
+        super(...arguments);
+        /**
+         * The internal value of `max` property.
+         */
+        this._max = '100';
+        /**
+         * The internal value of `min` property.
+         */
+        this._min = '0';
+        /**
+         * The internal value of `step` property.
+         */
+        this._step = '1';
+        /**
+         * `true` if the input should be disabled.
+         */
+        this.disabled = false;
+        /**
+         * true to specify if the control is invalid.
+         */
+        this.invalid = false;
+        /**
+         * true to specify if the control should display warn icon and text.
+         */
+        this.warn = false;
+        /**
+         * true to specify if the control should display warn icon and text.
+         */
+        this.hideTextInput = false;
+        /**
+         * The type of the `<input>`.
+         */
+        this.type = 'number';
+        /**
+         * true` if the input should be readonly.
+         */
+        this.readonly = false;
+    }
+    /**
+     * Handles `change` event to fire a normalized custom event.
+     */
+    _handleChange({ target }) {
+        const min = Number(this.min);
+        const max = Number(this.max);
+        const intermediate = this.value;
+        const newValue = target.value;
+        const newValueNumber = Number(newValue);
+        if (newValueNumber >= min && newValueNumber <= max && newValue !== '') {
+            this.value = newValueNumber;
+            this.dispatchEvent(new CustomEvent(this.constructor.eventChange, {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: this.value,
+                    intermediate,
+                },
+            }));
+        }
+        else {
+            this.invalid = newValue === '';
+            this.warn =
+                (newValueNumber < min || newValueNumber > max) && newValue !== '';
+            const intermediate = this.value;
+            if (newValue !== '') {
+                this.value = newValueNumber < min ? min : max;
+            }
+            else {
+                this.value = '';
+            }
+            this.dispatchEvent(new CustomEvent(this.constructor.eventChange, {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    value: this.value,
+                    intermediate,
+                },
+            }));
+        }
+    }
+    /**
+     * Handles `input` event to fire a normalized custom event.
+     */
+    _handleInput({ target }) {
+        const newValue = target.value;
+        if (newValue) {
+            this.value = Number(newValue);
+            this.invalid = false;
+            if (this.value >= Number(this.min) && this.value <= Number(this.max)) {
+                this.warn = false;
+                this.dispatchEvent(new CustomEvent(this.constructor.eventChange, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        value: this.value,
+                        intermediate: true,
+                    },
+                }));
+            }
+        }
+    }
+    /**
+     * The maximum value.
+     */
+    get max() {
+        return this._max.toString();
+    }
+    set max(value) {
+        const { max: oldMax } = this;
+        this._max = value;
+        this.requestUpdate('max', oldMax);
+    }
+    /**
+     * The minimum value.
+     */
+    get min() {
+        return this._min.toString();
+    }
+    set min(value) {
+        const { min: oldMin } = this;
+        this._min = value;
+        this.requestUpdate('min', oldMin);
+    }
+    /**
+     * The snapping step of the value.
+     */
+    get step() {
+        return this._step.toString();
+    }
+    set step(value) {
+        const { step: oldStep } = this;
+        this._step = value;
+        this.requestUpdate('step', oldStep);
+    }
+    render() {
+        const { disabled, hideTextInput, max, min, readonly, step, type, value, invalid, warn, _handleChange: handleChange, _handleInput: handleInput, } = this;
+        const isInteractive = !readonly && !disabled;
+        const normalizedProps = {
+            invalid: isInteractive && invalid,
+            warn: isInteractive && !invalid && warn,
+        };
+        const classes = classMap({
+            [`${prefix}--text-input`]: true,
+            [`${prefix}--slider-text-input`]: true,
+            [`${prefix}--text-input--invalid`]: normalizedProps.invalid,
+            [`${prefix}--slider-text-input--warn`]: normalizedProps.warn,
+        });
+        const invalidIcon = iconLoader(WarningFilled16, {
+            class: `${prefix}--slider__invalid-icon`,
+        });
+        const warnIcon = iconLoader(WarningAltFilled16, {
+            class: `${prefix}--slider__invalid-icon ${prefix}--slider__invalid-icon--warning`,
+        });
+        return html `
+      ${!hideTextInput
+            ? html `
+            <input
+              ?disabled="${disabled}"
+              ?data-invalid="${normalizedProps.invalid}"
+              type="${ifDefined(type)}"
+              class="${classes}"
+              max="${max}"
+              min="${min}"
+              ?readonly="${ifDefined(readonly)}"
+              step="${step}"
+              .value="${value}"
+              @change="${handleChange}"
+              @input="${handleInput}" />
+            ${normalizedProps.invalid ? html `${invalidIcon}` : null}
+            ${normalizedProps.warn ? html `${warnIcon}` : null}
+          `
+            : null}
+    `;
+    }
+    /**
+     * A selector that will return the parent slider.
+     */
+    static get selectorParent() {
+        return `${prefix}-slider`;
+    }
+    /**
+     * The name of the custom event fired after the value is changed by user gesture.
+     */
+    static get eventChange() {
+        return `${prefix}-slider-input-changed`;
+    }
+};
+CDSSliderInput.shadowRootOptions = Object.assign(Object.assign({}, LitElement.shadowRootOptions), { delegatesFocus: true });
+CDSSliderInput.styles = styles;
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSliderInput.prototype, "disabled", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSliderInput.prototype, "invalid", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSliderInput.prototype, "warn", void 0);
+__decorate([
+    property({ type: Boolean })
+], CDSSliderInput.prototype, "hideTextInput", void 0);
+__decorate([
+    property({ type: Number, reflect: true })
+], CDSSliderInput.prototype, "max", null);
+__decorate([
+    property({ type: Number, reflect: true })
+], CDSSliderInput.prototype, "min", null);
+__decorate([
+    property({ type: Number, reflect: true })
+], CDSSliderInput.prototype, "step", null);
+__decorate([
+    property()
+], CDSSliderInput.prototype, "type", void 0);
+__decorate([
+    property({ type: Number })
+], CDSSliderInput.prototype, "value", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSliderInput.prototype, "readonly", void 0);
+CDSSliderInput = __decorate([
+    carbonElement(`${prefix}-slider-input`)
+], CDSSliderInput);
+var CDSSliderInput$1 = CDSSliderInput;
+
+export { CDSSliderInput$1 as default };
+//# sourceMappingURL=slider-input.js.map

@@ -1,0 +1,183 @@
+/**
+ * Copyright IBM Corp. 2024
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { __decorate } from 'tslib';
+import { LitElement, html } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { prefix } from '../../globals/settings.js';
+import FocusMixin from '../../globals/mixins/focus.js';
+import HostListener from '../../globals/decorators/host-listener.js';
+import HostListenerMixin from '../../globals/mixins/host-listener.js';
+import { TAG_SIZE } from './defs.js';
+export { TAG_TYPE } from './defs.js';
+import './tag.js';
+import '../tooltip/tooltip.js';
+import '../tooltip/tooltip-content.js';
+import '../tooltip/definition-tooltip.js';
+import styles from './tag.scss.js';
+import { carbonElement } from '../../globals/decorators/carbon-element.js';
+
+/**
+ * @license
+ *
+ * Copyright IBM Corp. 2019, 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+/**
+ * Selectable tag.
+ *
+ * @element cds-custom-selectable-tag
+ *
+ * @fires cds-custom-selectable-tag-beforeselected - The custom event fired as the element is being selected
+ * @fires cds-custom-selectable-tag-selected - The custom event fired after the element has been selected
+ */
+let CDSSelectableTag = class CDSSelectableTag extends HostListenerMixin(FocusMixin(LitElement)) {
+    constructor() {
+        super(...arguments);
+        /**
+         * Custom events to be triggered
+         * @param event Event object
+         */
+        this.triggerEvents = (event) => {
+            if (this.disabled) {
+                event.stopPropagation();
+            }
+            else {
+                const init = {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                    detail: {
+                        triggeredBy: event.target,
+                    },
+                };
+                if (this.dispatchEvent(new CustomEvent(this.constructor.eventBeforeSelected, init))) {
+                    this.selected = !this.selected;
+                    this.dispatchEvent(new CustomEvent(this.constructor.eventSelected, init));
+                }
+            }
+        };
+        /**
+         * Handles `click` event on this element.
+         *
+         * @param event The event.
+         */
+        this._handleClick = (event) => {
+            this.triggerEvents(event);
+        };
+        this._handleKeyDown = (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                this.triggerEvents(event);
+            }
+        };
+        /**
+         * `true` if the tag should be disabled
+         */
+        this.disabled = false;
+        /**
+         * Specify the state of the selectable tag.
+         */
+        this.selected = false;
+        /**
+         * The size of the tag.
+         */
+        this.size = TAG_SIZE.MEDIUM;
+        /**
+         * Provide text to be rendered inside of a the tag.
+         */
+        this.text = '';
+        /**
+         * true if the tag text has ellipsis applied
+         */
+        this._hasEllipsisApplied = false;
+    }
+    async updated() {
+        var _a, _b, _c;
+        await this.updateComplete;
+        const textContainer = (_c = (_b = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector(`${prefix}-tag`)) === null || _b === void 0 ? void 0 : _b.shadowRoot) === null || _c === void 0 ? void 0 : _c.querySelector(`.${prefix}--tag__label`);
+        if (!textContainer)
+            return;
+        const hasEllipsis = textContainer.scrollWidth > textContainer.clientWidth;
+        this._hasEllipsisApplied = hasEllipsis;
+    }
+    render() {
+        const { disabled, selected, size, text, _hasEllipsisApplied: hasEllipsisApplied, } = this;
+        return html ` ${hasEllipsisApplied
+            ? html ` <cds-custom-tooltip align="bottom" keyboard-only leave-delay-ms=${0}>
+          <cds-custom-tag
+            ?aria-pressed="${selected}"
+            size="${size}"
+            ?disabled="${disabled}">
+            <slot name="icon" slot="icon"></slot>
+            ${text}
+            <slot name="decorator" slot="decorator"></slot>
+            <slot name="ai-label" slot="ai-label"></slot>
+            <slot name="slug" slot="slug"></slot>
+          </cds-custom-tag>
+          <cds-custom-tooltip-content id="content"> ${text} </cds-custom-tooltip-content>
+        </cds-custom-tooltip>`
+            : html `
+          <cds-custom-tag
+            ?aria-pressed="${selected}"
+            size="${size}"
+            ?disabled="${disabled}">
+            <slot name="icon" slot="icon"></slot>
+            ${text}
+            <slot name="decorator" slot="decorator"></slot>
+            <slot name="ai-label" slot="ai-label"></slot>
+            <slot name="slug" slot="slug"></slot>
+          </cds-custom-tag>
+        `}`;
+    }
+    /**
+     * The name of the custom event before this tag is selected.
+     */
+    static get eventBeforeSelected() {
+        return `${prefix}-selectable-tag-beingselected`;
+    }
+    /**
+     * The name of the custom event fired after this tag is selected.
+     */
+    static get eventSelected() {
+        return `${prefix}-selectable-tag-selected`;
+    }
+};
+CDSSelectableTag.styles = styles;
+__decorate([
+    HostListener('shadowRoot:click')
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- https://github.com/carbon-design-system/carbon/issues/20452
+    // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
+], CDSSelectableTag.prototype, "_handleClick", void 0);
+__decorate([
+    HostListener('shadowRoot:keydown')
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- https://github.com/carbon-design-system/carbon/issues/20452
+    // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
+], CDSSelectableTag.prototype, "_handleKeyDown", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSelectableTag.prototype, "disabled", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSSelectableTag.prototype, "selected", void 0);
+__decorate([
+    property({ type: String, reflect: true })
+], CDSSelectableTag.prototype, "size", void 0);
+__decorate([
+    property({ type: String, reflect: true })
+], CDSSelectableTag.prototype, "text", void 0);
+__decorate([
+    state()
+], CDSSelectableTag.prototype, "_hasEllipsisApplied", void 0);
+CDSSelectableTag = __decorate([
+    carbonElement(`${prefix}-selectable-tag`)
+], CDSSelectableTag);
+var CDSSelectableTag$1 = CDSSelectableTag;
+
+export { TAG_SIZE, CDSSelectableTag$1 as default };
+//# sourceMappingURL=selectable-tag.js.map

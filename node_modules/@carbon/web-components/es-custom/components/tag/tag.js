@@ -1,0 +1,232 @@
+/**
+ * Copyright IBM Corp. 2024
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { __decorate } from 'tslib';
+import { LitElement, html } from 'lit';
+import { query, property, state } from 'lit/decorators.js';
+import { prefix } from '../../globals/settings.js';
+import { iconLoader } from '../../globals/internal/icon-loader.js';
+import Close16 from '@carbon/icons/es/close/16.js';
+import FocusMixin from '../../globals/mixins/focus.js';
+import HostListener from '../../globals/decorators/host-listener.js';
+import HostListenerMixin from '../../globals/mixins/host-listener.js';
+import { TAG_SIZE, TAG_TYPE } from './defs.js';
+import styles from './tag.scss.js';
+import { carbonElement } from '../../globals/decorators/carbon-element.js';
+
+/**
+ * Copyright IBM Corp. 2019, 2023
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+/**
+ * Tag.
+ * @element cds-custom-tag
+ * @fires cds-custom-tag-beingclosed - The custom event fired as the element is being closed
+ * @fires cds-custom-tag-closed - The custom event fired after the element has been closed
+ */
+let CDSTag = class CDSTag extends HostListenerMixin(FocusMixin(LitElement)) {
+    constructor() {
+        super(...arguments);
+        /**
+         * Handles `click` event on this element.
+         *
+         * @param event The event.
+         */
+        this._handleClick = (event) => {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- https://github.com/carbon-design-system/carbon/issues/20452
+            if (event.composedPath().indexOf(this._buttonNode) >= 0) {
+                if (this.disabled) {
+                    event.stopPropagation();
+                }
+                else if (this.open) {
+                    const init = {
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true,
+                        detail: {
+                            triggeredBy: event.target,
+                        },
+                    };
+                    if (this.dispatchEvent(new CustomEvent(this.constructor.eventBeforeClose, init))) {
+                        this.open = false;
+                        this.dispatchEvent(new CustomEvent(this.constructor.eventClose, init));
+                    }
+                }
+            }
+        };
+        /**
+         * Text to show on filter tag "clear" buttons. Corresponds to the attribute with the same name
+         *
+         * @deprecated The `title` property has been deprecated and will be removed in the next major version. Use cds-custom-dismissible-tag instead.
+         */
+        this.title = 'Clear filter';
+        /**
+         * `true` if the tag should be disabled
+         */
+        this.disabled = false;
+        /**
+         * Determine if is a filter/chip
+         *
+         * @deprecated The `filter` property has been deprecated and will be removed in the next major version. Use cds-custom-dismissible-tag instead.
+         */
+        this.filter = false;
+        /**
+         * `true` if there is a custom icon.
+         */
+        this.hasCustomIcon = false;
+        /**
+         * `true` if the tag should be open.
+         */
+        this.open = true;
+        /**
+         * The size of the tag.
+         */
+        this.size = TAG_SIZE.MEDIUM;
+        /**
+         * The type of the tag.
+         */
+        this.type = TAG_TYPE.GRAY;
+        /**
+         * true if the tag text has ellipsis applied
+         */
+        this._hasEllipsisApplied = false;
+    }
+    /**
+     * Handles `slotchange` event.
+     */
+    _handleAILabelSlotChange({ target }) {
+        const hasContent = target
+            .assignedNodes()
+            .filter((elem) => elem.matches !== undefined
+            ? elem.matches(this.constructor.aiLabelItem) ||
+                // remove reference of slug in v12
+                elem.matches(this.constructor.slugItem)
+            : false);
+        if (hasContent.length > 0) {
+            hasContent[0].setAttribute('tag', `${this.type}`);
+            hasContent[0].setAttribute('size', 'sm');
+            hasContent[0].setAttribute('kind', 'inline');
+        }
+        this.requestUpdate();
+    }
+    /**
+     * Handles `slotchange` event.
+     */
+    _handleIconSlotChange({ target }) {
+        const hasIcon = target.assignedNodes();
+        this.hasCustomIcon = Boolean(hasIcon.length > 0);
+        this.requestUpdate();
+    }
+    updated() {
+        var _a;
+        const textContainer = (_a = this.shadowRoot) === null || _a === void 0 ? void 0 : _a.querySelector(`.${prefix}--tag__label`);
+        if (!textContainer || this._hasEllipsisApplied === true)
+            return;
+        this._hasEllipsisApplied =
+            textContainer.scrollWidth > textContainer.clientWidth;
+        const root = this.getRootNode();
+        // Check if the root is a shadow root and get its host
+        if (root instanceof ShadowRoot) {
+            const parent = root.host.tagName.toLowerCase();
+            if (parent === `${prefix}-selectable-tag` ||
+                parent === `${prefix}-operational-tag`) {
+                this.setAttribute('role', 'button');
+                this.tabIndex = this.disabled ? -1 : 0;
+            }
+        }
+    }
+    render() {
+        const { disabled, filter, _handleAILabelSlotChange: handleAILabelSlotChange, _handleIconSlotChange: handleIconSlotChange, size, title, } = this;
+        return html `
+      ${size !== TAG_SIZE.SMALL
+            ? html `<slot name="icon" @slotchange="${handleIconSlotChange}"></slot>`
+            : ''}
+      <span class="${prefix}--tag__label">
+        <slot></slot>
+      </span>
+      <slot name="decorator" @slotchange="${handleAILabelSlotChange}"></slot>
+      <slot name="ai-label" @slotchange="${handleAILabelSlotChange}"></slot>
+      <slot name="slug" @slotchange="${handleAILabelSlotChange}"></slot>
+      ${filter
+            ? html `
+            <button class="${prefix}--tag__close-icon" ?disabled=${disabled}>
+              ${iconLoader(Close16, { 'aria-label': title })}
+            </button>
+          `
+            : ``}
+    `;
+    }
+    /**
+     * A selector that will return the slug item.
+     *
+     * remove in v12
+     */
+    static get slugItem() {
+        return `${prefix}-slug`;
+    }
+    /**
+     * A selector that will return the AI Label item.
+     */
+    static get aiLabelItem() {
+        return `${prefix}-ai-label`;
+    }
+    /**
+     * The name of the custom event fired before this tag is being closed upon a user gesture.
+     * Cancellation of this event stops the user-initiated action of closing this tag.
+     */
+    static get eventBeforeClose() {
+        return `${prefix}-tag-beingclosed`;
+    }
+    /**
+     * The name of the custom event fired after this tag is closed upon a user gesture.
+     */
+    static get eventClose() {
+        return `${prefix}-tag-closed`;
+    }
+};
+CDSTag.styles = styles;
+__decorate([
+    query('button')
+], CDSTag.prototype, "_buttonNode", void 0);
+__decorate([
+    HostListener('shadowRoot:click')
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- https://github.com/carbon-design-system/carbon/issues/20452
+    // @ts-ignore: The decorator refers to this method but TS thinks this method is not referred to
+], CDSTag.prototype, "_handleClick", void 0);
+__decorate([
+    property({ type: String })
+], CDSTag.prototype, "title", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSTag.prototype, "disabled", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSTag.prototype, "filter", void 0);
+__decorate([
+    property({ type: Boolean, attribute: 'has-custom-icon', reflect: true })
+], CDSTag.prototype, "hasCustomIcon", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true })
+], CDSTag.prototype, "open", void 0);
+__decorate([
+    property({ reflect: true })
+], CDSTag.prototype, "size", void 0);
+__decorate([
+    property({ reflect: true })
+], CDSTag.prototype, "type", void 0);
+__decorate([
+    state()
+], CDSTag.prototype, "_hasEllipsisApplied", void 0);
+CDSTag = __decorate([
+    carbonElement(`${prefix}-tag`)
+], CDSTag);
+var CDSTag$1 = CDSTag;
+
+export { TAG_SIZE, TAG_TYPE, CDSTag$1 as default };
+//# sourceMappingURL=tag.js.map

@@ -1,4 +1,0 @@
-recommonmark
-Sphinx>=4.2.0,<8
-sphinx-multiproject
-myst-parser

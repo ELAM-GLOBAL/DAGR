@@ -1,0 +1,372 @@
+/**
+ * Copyright IBM Corp. 2024
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+import { __decorate } from 'tslib';
+import { LitElement, html } from 'lit';
+import { property } from 'lit/decorators.js';
+import { prefix } from '../../globals/settings.js';
+import { indexOf, forEach } from '../../globals/internal/collection-helpers.js';
+import { CONTENT_SWITCHER_SIZE, NAVIGATION_DIRECTION } from './defs.js';
+import styles from './content-switcher.scss.js';
+import { carbonElement } from '../../globals/decorators/carbon-element.js';
+
+/**
+ * Copyright IBM Corp. 2019, 2025
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+/**
+ * @param index The index
+ * @param length The length of the array.
+ * @returns The new index, adjusting overflow/underflow.
+ */
+const capIndex = (index, length) => {
+    if (index < 0) {
+        return length - 1;
+    }
+    if (index >= length) {
+        return 0;
+    }
+    return index;
+};
+/**
+ * Content switcher.
+ *
+ * @element cds-content-switcher
+ * @fires cds-content-switcher-beingselected
+ *   The custom event fired before a content switcher item is selected upon a user gesture.
+ *   Cancellation of this event stops changing the user-initiated selection.
+ * @fires cds-content-switcher-selected - The custom event fired after a a content switcher item is selected upon a user gesture.
+ */
+let CDSContentSwitcher = class CDSContentSwitcher extends LitElement {
+    constructor() {
+        super(...arguments);
+        /**
+         * The value of the selected item.
+         */
+        this.value = '';
+        /**
+         * Specify a selected index for the initially selected content
+         */
+        this.selectedIndex = 0;
+        /**
+         * Choose whether or not to automatically change selection on focus when left/right arrow pressed. Defaults to 'automatic'
+         */
+        this.selectionMode = 'automatic';
+        /**
+         * Content switcher size.
+         */
+        this.size = CONTENT_SWITCHER_SIZE.REGULAR;
+        /**
+         * Icon only.
+         */
+        this.iconOnly = false;
+        /**
+         * `true` to use the low contrast version.
+         */
+        this.lowContrast = false;
+    }
+    /**
+     * Handles `mouseover`/`mouseout` events on `<slot>`.
+     *
+     * @param event The event.
+     * @param event.target The event target.
+     * @param event.type The event type.
+     */
+    _handleHover({ target, type }) {
+        var _a;
+        const { selectorItem } = this.constructor;
+        const items = this.querySelectorAll(selectorItem);
+        const index = type !== 'mouseover'
+            ? -1
+            : // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- https://github.com/carbon-design-system/carbon/issues/20452
+                indexOf(items, target.closest(selectorItem));
+        if ((_a = target.closest(selectorItem)) === null || _a === void 0 ? void 0 : _a.hasAttribute('disabled')) {
+            return;
+        }
+        const nextIndex = index < 0 ? index : index + 1;
+        forEach(this.querySelectorAll(selectorItem), (elem, i) => {
+            // Specifies child `<cds-content-switcher-item>` to hide its divider instead of using CSS,
+            // until `:host-context()` gets supported in all major browsers
+            elem.hideDivider = i === nextIndex;
+        });
+        const { selectorItemSelected } = this
+            .constructor;
+        const selectedItem = this.querySelector(selectorItemSelected);
+        const nextItem = this._getNextItem(selectedItem, 1);
+        nextItem.hideDivider = true;
+    }
+    /**
+     * @param target The current event target.
+     * @returns The item to be selected.
+     */
+    _getCurrentItem(target) {
+        var _a;
+        const items = this.querySelectorAll(this.constructor.selectorItemEnabled);
+        const { selectorItem } = this.constructor;
+        const containerItem = target.closest(selectorItem);
+        const index = indexOf(items, containerItem);
+        return (_a = items[index]) !== null && _a !== void 0 ? _a : null;
+    }
+    /**
+     * @param currentItem The currently selected item.
+     * @param direction The navigation direction.
+     * @returns The item to be selected.
+     */
+    _getNextItem(currentItem, direction) {
+        const items = this.querySelectorAll(this.constructor.selectorItemEnabled);
+        const currentIndex = indexOf(items, currentItem);
+        const nextIndex = capIndex(currentIndex + direction, items.length);
+        return nextIndex === currentIndex ? null : items[nextIndex];
+    }
+    /**
+     * Handles `click` event on content switcher item.
+     *
+     * @param event The event.
+     * @param event.target The event target.
+     */
+    _handleClick({ target }) {
+        const currentItem = this._getCurrentItem(target);
+        this._handleUserInitiatedSelectItem(currentItem, 'mouse');
+    }
+    /**
+     * Handles `keydown` event on the top-level element in the shadow DOM.
+     *
+     * @param event The event.
+     * @param event.key The event key.
+     */
+    _handleKeydown({ key }) {
+        if (key in NAVIGATION_DIRECTION) {
+            this._navigate(NAVIGATION_DIRECTION[key]);
+        }
+    }
+    /**
+     * Handles user-initiated selection of a content switcher item.
+     *
+     * @param [item] The content switcher item user wants to select.
+     */
+    _handleUserInitiatedSelectItem(item, interactionType) {
+        var _a, _b, _c;
+        if ((item && !item.disabled && item.value !== this.value) ||
+            (this.selectionMode === 'manual' &&
+                interactionType === 'keyboard' &&
+                !item.disabled)) {
+            const init = {
+                bubbles: true,
+                composed: true,
+                detail: {
+                    item,
+                },
+            };
+            const constructor = this.constructor;
+            const beforeSelectEvent = new CustomEvent(constructor.eventBeforeSelect, Object.assign(Object.assign({}, init), { cancelable: true }));
+            if (this.dispatchEvent(beforeSelectEvent)) {
+                this._selectionDidChange(item, interactionType);
+                // Add extra event details (index, name, text) to match the React `onChange`
+                const items = this.querySelectorAll(constructor.selectorItem);
+                const index = Array.from(items).indexOf(item);
+                const name = (_a = item.getAttribute('name')) !== null && _a !== void 0 ? _a : undefined;
+                const text = (_c = (_b = item.textContent) === null || _b === void 0 ? void 0 : _b.trim()) !== null && _c !== void 0 ? _c : undefined;
+                const afterSelectEvent = new CustomEvent(constructor.eventSelect, {
+                    bubbles: true,
+                    composed: true,
+                    detail: {
+                        item,
+                        index,
+                        name,
+                        text,
+                    },
+                });
+                this.dispatchEvent(afterSelectEvent);
+            }
+        }
+    }
+    /**
+     * Navigates through content switcher items.
+     *
+     * @param direction `-1` to navigate backward, `1` to navigate forward.
+     */
+    _navigate(direction) {
+        const { selectorItemFocused } = this
+            .constructor;
+        const nextItem = this._getNextItem(this.querySelector(selectorItemFocused), direction);
+        if (nextItem) {
+            this._handleUserInitiatedSelectItem(nextItem, 'keyboard');
+            this.requestUpdate();
+        }
+    }
+    /**
+     * A callback that runs after change in content switcher selection upon user interaction is confirmed.
+     *
+     * @param itemToSelect A content switcher item.
+     */
+    _selectionDidChange(itemToSelect, interactionType) {
+        if (this.selectionMode === 'manual' && interactionType === 'keyboard') {
+            // In manual mode, only focus the item without changing the selection
+            Promise.resolve().then(() => {
+                itemToSelect.focus();
+            });
+            return;
+        }
+        this.value = itemToSelect.value;
+        forEach(this.querySelectorAll(this.constructor.selectorItemSelected), (item) => {
+            item.selected = false;
+        });
+        itemToSelect.selected = true;
+        // Waits for rendering with the new state that updates `tabindex`
+        Promise.resolve().then(() => {
+            itemToSelect.focus();
+            const { selectorItem } = this.constructor;
+            const items = this.querySelectorAll(selectorItem);
+            const index = indexOf(items, itemToSelect.closest(selectorItem) // eslint-disable-line @typescript-eslint/no-non-null-assertion -- https://github.com/carbon-design-system/carbon/issues/20452
+            );
+            const nextIndex = index < 0 ? index : index + 1;
+            forEach(this.querySelectorAll(selectorItem), (elem, i) => {
+                // Specifies child `<cds-content-switcher-item>` to hide its divider instead of using CSS,
+                // until `:host-context()` gets supported in all major browsers
+                elem.hideDivider = i === nextIndex;
+            });
+        });
+    }
+    firstUpdated() {
+        this._updateSelectedItemFromIndex();
+    }
+    // Validate a selected index for the initially selected content
+    _updateSelectedItemFromIndex() {
+        const { selectorItemEnabled } = this
+            .constructor;
+        const items = this.querySelectorAll(selectorItemEnabled);
+        if (items.length > 0 &&
+            this.selectedIndex >= 0 &&
+            this.selectedIndex < items.length) {
+            const itemToSelect = items[this.selectedIndex];
+            this._selectionDidChange(itemToSelect, this.selectionMode === 'manual' ? 'keyboard' : 'mouse');
+        }
+    }
+    _updateSelectedItemFromValue(changedProps) {
+        if (changedProps.has('value')) {
+            const { selectorItem } = this.constructor;
+            forEach(this.querySelectorAll(selectorItem), (elem) => {
+                elem.selected =
+                    elem.value === this.value;
+            });
+        }
+    }
+    shouldUpdate(changedProps) {
+        if (changedProps.has('iconOnly') || changedProps.has('selectedIndex')) {
+            const items = this.querySelectorAll(`${prefix}-content-switcher-item`);
+            const allIcon = Array.from(items).every((item) => item.hasAttribute('icon'));
+            this.iconOnly = allIcon;
+        }
+        return true;
+    }
+    updated(changedProperties) {
+        if (changedProperties.has('selectedIndex')) {
+            this._updateSelectedItemFromIndex();
+        }
+        this._updateSelectedItemFromValue(changedProperties);
+        if (changedProperties.has('size')) {
+            const items = this.querySelectorAll(`${prefix}-content-switcher-item`);
+            items.forEach((item) => {
+                const size = this.size || 'md';
+                item.setAttribute('size', size);
+            });
+        }
+    }
+    _handleSlotchange() {
+        const { selectorItemSelected } = this
+            .constructor;
+        const selectedItem = this.querySelector(selectorItemSelected);
+        const nextItem = this._getNextItem(selectedItem, 1);
+        // Specifies child `<cds-content-switcher-item>` to hide its divider instead of using CSS,
+        // until `:host-context()` gets supported in all major browsers
+        if (nextItem) {
+            nextItem.hideDivider = true;
+        }
+    }
+    /**
+     * A selector that will return content switcher items.
+     */
+    static get selectorItem() {
+        return `${prefix}-content-switcher-item`;
+    }
+    /**
+     * A selector that will return content switcher icon items.
+     */
+    static get selectorIconItem() {
+        return `${prefix}-content-switcher-item[icon]`;
+    }
+    /**
+     * A selector that will return enabled content switcher items.
+     */
+    static get selectorItemEnabled() {
+        return `${prefix}-content-switcher-item:not([disabled])`;
+    }
+    /**
+     * A selector that will return selected items.
+     */
+    static get selectorItemSelected() {
+        return `${prefix}-content-switcher-item[selected]`;
+    }
+    /**
+     * A selector that will return focused items.
+     */
+    static get selectorItemFocused() {
+        return `${prefix}-content-switcher-item:focus`;
+    }
+    /**
+     * The name of the custom event fired before a content switcher item is selected upon a user gesture.
+     * Cancellation of this event stops changing the user-initiated selection.
+     */
+    static get eventBeforeSelect() {
+        return `${prefix}-content-switcher-beingselected`;
+    }
+    /**
+     * The name of the custom event fired after a a content switcher item is selected upon a user gesture.
+     */
+    static get eventSelect() {
+        return `${prefix}-content-switcher-selected`;
+    }
+    render() {
+        const { _handleHover: handleHover, _handleKeydown: handleKeydown, _handleSlotchange: handleSlotchange, } = this;
+        return html `
+      <slot
+        @click="${this._handleClick}"
+        @keydown="${handleKeydown}"
+        @mouseover="${handleHover}"
+        @mouseout="${handleHover}"
+        @slotchange=${handleSlotchange}></slot>
+    `;
+    }
+};
+CDSContentSwitcher.styles = styles;
+__decorate([
+    property({ reflect: true })
+], CDSContentSwitcher.prototype, "value", void 0);
+__decorate([
+    property({ type: Number, attribute: 'selected-index' })
+], CDSContentSwitcher.prototype, "selectedIndex", void 0);
+__decorate([
+    property({ attribute: 'selection-mode' })
+], CDSContentSwitcher.prototype, "selectionMode", void 0);
+__decorate([
+    property({ reflect: true })
+], CDSContentSwitcher.prototype, "size", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true, attribute: 'icon' })
+], CDSContentSwitcher.prototype, "iconOnly", void 0);
+__decorate([
+    property({ type: Boolean, reflect: true, attribute: 'low-contrast' })
+], CDSContentSwitcher.prototype, "lowContrast", void 0);
+CDSContentSwitcher = __decorate([
+    carbonElement(`${prefix}-content-switcher`)
+], CDSContentSwitcher);
+var CDSContentSwitcher$1 = CDSContentSwitcher;
+
+export { CONTENT_SWITCHER_SIZE, NAVIGATION_DIRECTION, CDSContentSwitcher$1 as default };
+//# sourceMappingURL=content-switcher.js.map

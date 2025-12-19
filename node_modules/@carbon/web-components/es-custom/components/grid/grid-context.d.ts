@@ -1,0 +1,9 @@
+export type GridContext = {
+    /**
+     * Specifies whether subgrid should be enabled
+     */
+    subgrid?: boolean;
+};
+export declare const gridContext: {
+    __context__: GridContext;
+};

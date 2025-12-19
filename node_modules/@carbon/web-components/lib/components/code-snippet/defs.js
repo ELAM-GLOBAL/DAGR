@@ -1,0 +1,41 @@
+/**
+ * Copyright IBM Corp. 2024
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+
+'use strict';
+
+var sharedEnums = require('../../globals/shared-enums.js');
+
+/**
+ * Copyright IBM Corp. 2020, 2022
+ *
+ * This source code is licensed under the Apache-2.0 license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+/**
+ * Code snippet types.
+ */
+exports.CODE_SNIPPET_TYPE = void 0;
+(function (CODE_SNIPPET_TYPE) {
+    /**
+     * Single variant.
+     */
+    CODE_SNIPPET_TYPE["SINGLE"] = "single";
+    /**
+     * Inline variant.
+     */
+    CODE_SNIPPET_TYPE["INLINE"] = "inline";
+    /**
+     * Multi-line variant.
+     */
+    CODE_SNIPPET_TYPE["MULTI"] = "multi";
+})(exports.CODE_SNIPPET_TYPE || (exports.CODE_SNIPPET_TYPE = {}));
+
+Object.defineProperty(exports, "CODE_SNIPPET_COLOR_SCHEME", {
+    enumerable: true,
+    get: function () { return sharedEnums.FORM_ELEMENT_COLOR_SCHEME; }
+});
+//# sourceMappingURL=defs.js.map
