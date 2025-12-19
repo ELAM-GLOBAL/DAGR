@@ -1,0 +1,8 @@
+# CODEOWNERS — adjust team/user handles to match your org
+# Default owners for everything
+*       @ELAM-GLOBAL/frontend-team
+
+# Owners for the UI code areas
+/src/components/    @ELAM-GLOBAL/frontend-team
+/src/styles/        @ELAM-GLOBAL/frontend-team
+/.github/           @anushrotmohanty

@@ -1,0 +1,30 @@
+# PR preview deployment using Vercel (recommended). Requires VERCEL_TOKEN and VERCEL_PROJECT_ID as secrets.
+# If you use Netlify, replace step with netlify action; if you use GitHub Pages, implement a gh-pages deploy.
+name: PR Preview (Vercel)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  vercel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Trigger Vercel Deploy
+        uses: amondnet/vercel-action@v21
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-args: --prod=false
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}    # optional
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+# Notes:
+# - Configure a Vercel project for this repo and create a VERCEL_TOKEN secret
+# - Vercel/Netlify will provide preview URLs automatically. Add the URL to the PR via a comment or use a bot/integration.

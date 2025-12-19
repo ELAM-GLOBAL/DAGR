@@ -1,0 +1,81 @@
+# CI workflow: lint, test, typecheck, build, Storybook build
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'playground/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      node-version: ${{ steps.node-version.outputs.node-version }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        id: node-version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Install dependencies
+        run: npm ci
+
+  lint:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+
+  test:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Run tests
+        run: npm test -- --silent
+
+  typecheck:
+    needs: setup
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Type check
+        run: npm run build --if-present
+
+  build:
+    needs: [lint, test, typecheck]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+
+  storybook:
+    if: ${{ always() }}
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: npm ci
+      - name: Build Storybook
+        run: npm run build-storybook --if-present
+      # Optionally persist artifacts or upload SB to a preview host in another workflow
