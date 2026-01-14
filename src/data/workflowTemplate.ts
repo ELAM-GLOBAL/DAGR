@@ -18,10 +18,14 @@ export const INITIAL_WORKFLOW: WorkflowData = {
         { id: 'join-fx-convert', title: 'Join & FX Convert', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
         { id: 'build-return-inputs', title: 'Build Return Inputs', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
 
-        // Lane 3: Analyst
-        { id: 'returns-config', title: 'Returns Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
+        // Lane 3: Analyst (4-Domain Analytics)
+        { id: 'analytics-config', title: 'Analytics Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Configure metrics, benchmarks, risk parameters' },
         { id: 'benchmark-config', title: 'Benchmark Config', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true },
-        { id: 'compute-returns', title: 'Compute Returns', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
+        { id: 'compute-performance', title: 'Performance Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'TWRR, IRR, CAGR, Active Return' },
+        { id: 'compute-risk', title: 'Risk Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'VaR, ES, Vol, TE, Drawdown' },
+        { id: 'compute-attribution', title: 'Attribution Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Brinson, Sector Contrib' },
+        { id: 'stress-testing', title: 'Stress Testing', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true, description: 'Historical & custom scenarios' },
+        { id: 'risk-adjusted-metrics', title: 'Risk-Adjusted Metrics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Sharpe, Sortino, Treynor, IR, Alpha' },
         { id: 'output-qa-checks', title: 'Output QA Checks', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
 
         // Lane 4: Scientist
@@ -48,25 +52,37 @@ export const INITIAL_WORKFLOW: WorkflowData = {
         { id: 'e9', source: 'normalize-align', target: 'join-fx-convert', type: 'solid' },
         { id: 'e10', source: 'join-fx-convert', target: 'build-return-inputs', type: 'solid' },
 
-        // Engineer -> Analyst
-        { id: 'e11', source: 'build-return-inputs', target: 'compute-returns', type: 'solid' },
+        // Engineer -> Analyst (4-Domain Analytics)
+        { id: 'e11', source: 'build-return-inputs', target: 'compute-performance', type: 'solid' },
+        { id: 'e11b', source: 'build-return-inputs', target: 'compute-risk', type: 'solid' },
 
-        // Analyst Flow
-        { id: 'e12', source: 'returns-config', target: 'compute-returns', type: 'solid' },
-        { id: 'e13', source: 'compute-returns', target: 'output-qa-checks', type: 'solid' },
+        // Analyst Flow (4 Domains)
+        { id: 'e12', source: 'analytics-config', target: 'compute-performance', type: 'solid' },
+        { id: 'e12b', source: 'analytics-config', target: 'compute-risk', type: 'solid' },
+        { id: 'e12c', source: 'analytics-config', target: 'compute-attribution', type: 'solid' },
+        { id: 'e13', source: 'compute-performance', target: 'compute-attribution', type: 'solid' },
+        { id: 'e13b', source: 'compute-risk', target: 'risk-adjusted-metrics', type: 'solid' },
+        { id: 'e13c', source: 'compute-performance', target: 'risk-adjusted-metrics', type: 'solid' },
+        { id: 'e13d', source: 'risk-adjusted-metrics', target: 'output-qa-checks', type: 'solid' },
+        { id: 'e13e', source: 'compute-attribution', target: 'output-qa-checks', type: 'solid' },
 
         // Benchmark Flow (Optional)
         { id: 'e14', source: 'benchmark', target: 'benchmark-config', type: 'dashed' },
-        { id: 'e15', source: 'benchmark-config', target: 'compute-returns', type: 'dashed' },
+        { id: 'e15', source: 'benchmark-config', target: 'compute-performance', type: 'dashed' },
+        { id: 'e15b', source: 'benchmark-config', target: 'compute-attribution', type: 'dashed' },
+
+        // Stress Testing Flow (Optional)
+        { id: 'e16', source: 'compute-risk', target: 'stress-testing', type: 'dashed' },
+        { id: 'e17', source: 'stress-testing', target: 'output-qa-checks', type: 'dashed' },
 
         // Scientist Flow (Optional)
-        { id: 'e16', source: 'build-return-inputs', target: 'model-step', type: 'dashed' },
-        { id: 'e17', source: 'model-step', target: 'compute-returns', type: 'dashed' },
+        { id: 'e18', source: 'build-return-inputs', target: 'model-step', type: 'dashed' },
+        { id: 'e19', source: 'model-step', target: 'compute-risk', type: 'dashed' },
 
         // Output Flow
-        { id: 'e18', source: 'output-qa-checks', target: 'dashboard-cards', type: 'solid' },
-        { id: 'e19', source: 'output-qa-checks', target: 'report-generator', type: 'solid' },
-        { id: 'e20', source: 'output-qa-checks', target: 'exports-api', type: 'solid' },
+        { id: 'e20', source: 'output-qa-checks', target: 'dashboard-cards', type: 'solid' },
+        { id: 'e21', source: 'output-qa-checks', target: 'report-generator', type: 'solid' },
+        { id: 'e22', source: 'output-qa-checks', target: 'exports-api', type: 'solid' },
     ]
 };
 

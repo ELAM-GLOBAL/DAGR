@@ -3,6 +3,8 @@ import ShellLayout from './components/ShellLayout';
 import WorkflowPage from './pages/WorkflowPage';
 import { RiskHome, DataConnections, DashboardStub, PlaceholderStub } from './pages/StubPages';
 import { DataVisualPage } from './pages/DataVisualPage';
+import PortfolioRiskDashboard from './pages/PortfolioRiskDashboard';
+import MarketDataPage from './pages/MarketDataPage';
 
 function App() {
     return (
@@ -23,11 +25,11 @@ function App() {
 
                     {/* Portfolio Returns Capability */}
                     <Route path="portfolio-returns">
-                        <Route path="dashboard" element={<DashboardStub title="Portfolio Returns Dashboard" />} />
+                        <Route path="dashboard" element={<PortfolioRiskDashboard />} />
                         <Route path="workflow" element={<WorkflowPage />} />
                         <Route path="data-visual">
                             <Route path="portfolio" element={<DataVisualPage />} />
-                            <Route path="market" element={<DataVisualPage />} />
+                            <Route path="market" element={<MarketDataPage />} />
                             <Route path="fx" element={<DataVisualPage />} />
                             <Route path="benchmark" element={<DataVisualPage />} />
                             <Route path="" element={<Navigate to="portfolio" replace />} />

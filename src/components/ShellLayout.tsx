@@ -37,8 +37,11 @@ const ShellLayout = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const isPortfolioReturns = location.pathname.includes('/portfolio-returns');
-    const isVarCvar = location.pathname.includes('/var-cvar');
+    const isPortfolioReturns = location.pathname.includes('/portfolio-returns') || location.pathname.includes('/portfolio-risk');
+    const isStressTesting = location.pathname.includes('/stress-testing');
+    const isGovernance = location.pathname.includes('/governance');
+    const isALM = location.pathname.includes('/alm');
+    const isCreditRisk = location.pathname.includes('/credit-risk');
     const isRiskHome = location.pathname.includes('/home') || location.pathname === '/packs/risk' || location.pathname === '/packs/risk/';
 
     const renderSideNavItems = () => {
@@ -98,47 +101,13 @@ const ShellLayout = () => {
             );
         }
 
-        if (isVarCvar) {
-            return (
-                <SideNavItems>
-                    <HeaderSideNavItems hasDivider={true}>
-                        <HeaderMenuItem onClick={() => navigate('/packs/risk/home')}>Home</HeaderMenuItem>
-                        <HeaderMenuItem onClick={() => navigate('/packs/risk/portfolio-returns/dashboard')}>Portfolio Returns</HeaderMenuItem>
-                        <HeaderMenuItem isCurrentPage onClick={() => navigate('/packs/risk/var-cvar/dashboard')}>VaR / CVaR</HeaderMenuItem>
-                        <HeaderMenuItem>Dashboards</HeaderMenuItem>
-                    </HeaderSideNavItems>
-                    <SideNavLink
-                        renderIcon={Dashboard}
-                        isActive={location.pathname.includes('/dashboard')}
-                        onClick={() => navigate('/packs/risk/var-cvar/dashboard')}
-                    >
-                        Dashboard
-                    </SideNavLink>
-                    <SideNavLink
-                        renderIcon={Activity}
-                        isActive={location.pathname.includes('/workflow')}
-                        onClick={() => navigate('/packs/risk/var-cvar/workflow')}
-                    >
-                        Workflow
-                    </SideNavLink>
-                    <SideNavLink
-                        renderIcon={DataVis_1}
-                        isActive={location.pathname.includes('/data-visual')}
-                        onClick={() => navigate('/packs/risk/var-cvar/data-visual')}
-                    >
-                        Data Visual
-                    </SideNavLink>
-                </SideNavItems>
-            );
-        }
-
         return (
             <SideNavItems>
                 <HeaderSideNavItems hasDivider={true}>
                     <HeaderMenuItem isCurrentPage onClick={() => navigate('/packs/risk/home')}>Home</HeaderMenuItem>
-                    <HeaderMenuItem onClick={() => navigate('/packs/risk/portfolio-returns/dashboard')}>Portfolio Returns</HeaderMenuItem>
-                    <HeaderMenuItem onClick={() => navigate('/packs/risk/var-cvar/dashboard')}>VaR / CVaR</HeaderMenuItem>
-                    <HeaderMenuItem>Dashboards</HeaderMenuItem>
+                    <HeaderMenuItem onClick={() => navigate('/packs/risk/portfolio-returns/dashboard')}>Portfolio Risk</HeaderMenuItem>
+                    <HeaderMenuItem onClick={() => navigate('/packs/risk/stress-testing')}>Stress Testing</HeaderMenuItem>
+                    <HeaderMenuItem onClick={() => navigate('/packs/risk/governance')}>Governance</HeaderMenuItem>
                 </HeaderSideNavItems>
                 <SideNavLink
                     renderIcon={Home}
@@ -218,16 +187,33 @@ const ShellLayout = () => {
                                 isCurrentPage={isPortfolioReturns}
                                 onClick={(e) => { e.preventDefault(); navigate('/packs/risk/portfolio-returns/dashboard'); }}
                             >
-                                Portfolio Returns
+                                Portfolio Risk
                             </HeaderMenuItem>
                             <HeaderMenuItem
-                                isCurrentPage={isVarCvar}
-                                onClick={(e) => { e.preventDefault(); navigate('/packs/risk/var-cvar/dashboard'); }}
+                                isCurrentPage={isStressTesting}
+                                onClick={(e) => { e.preventDefault(); navigate('/packs/risk/stress-testing'); }}
                             >
-                                VaR / CVaR
+                                Stress Testing
                             </HeaderMenuItem>
-                            <HeaderMenuItem href="#" onClick={(e) => e.preventDefault()}>
-                                Dashboards
+                            <HeaderMenuItem
+                                isCurrentPage={isGovernance}
+                                onClick={(e) => { e.preventDefault(); navigate('/packs/risk/governance'); }}
+                            >
+                                Governance
+                            </HeaderMenuItem>
+                            <HeaderMenuItem
+                                isCurrentPage={isALM}
+                                onClick={(e) => { e.preventDefault(); navigate('/packs/risk/alm'); }}
+                                style={{ opacity: 0.6 }}
+                            >
+                                ALM
+                            </HeaderMenuItem>
+                            <HeaderMenuItem
+                                isCurrentPage={isCreditRisk}
+                                onClick={(e) => { e.preventDefault(); navigate('/packs/risk/credit-risk'); }}
+                                style={{ opacity: 0.6 }}
+                            >
+                                Credit
                             </HeaderMenuItem>
                         </HeaderNavigation>
                         <HeaderGlobalBar>

@@ -43,7 +43,7 @@ const NodeTile: React.FC<NodeTileProps> = ({ node, isSelected, onClick, id, onCo
             onClick={() => onClick(node.id)}
             style={{
                 position: 'relative',
-                width: '240px',
+                width: '200px',
                 marginBottom: '1rem',
                 cursor: node.isDisabled ? 'not-allowed' : 'pointer',
                 opacity: node.isDisabled ? 0.5 : 1,

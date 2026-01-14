@@ -4,7 +4,7 @@ import WidgetConfigModal from '../components/WidgetConfigModal';
 import WidgetLibrary from '../components/WidgetLibrary';
 import { useState } from 'react';
 import { INITIAL_WORKFLOW } from '../data/workflowTemplate';
-import { WidgetNode } from '../types';
+import { WidgetNode, WidgetEdge } from '../types';
 import { Play, Reset, View, ViewOff } from '@carbon/icons-react';
 
 const WorkflowPage = () => {
@@ -63,10 +63,14 @@ const WorkflowPage = () => {
                 id: `edge-${sourceId}-${targetId}-${Date.now()}`,
                 source: sourceId,
                 target: targetId,
-                type: 'default'
+                type: 'solid'
             };
             return [...prev, newEdge];
         });
+    };
+
+    const handleEdgeDelete = (edgeId: string) => {
+        setEdges(prev => prev.filter(e => e.id !== edgeId));
     };
 
     const handleNodeSelect = (id: string) => {
@@ -134,6 +138,7 @@ const WorkflowPage = () => {
                         scientistLaneVisible={scientistLaneVisible}
                         onNodeDrop={handleNodeDrop}
                         onEdgeCreate={handleEdgeCreate}
+                        onEdgeDelete={handleEdgeDelete}
                     />
                 </div>
 

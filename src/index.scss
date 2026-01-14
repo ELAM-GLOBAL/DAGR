@@ -41,3 +41,36 @@ body {
 
 /* Carbon white theme provides its own header and sidenav styling.
    Remove custom overrides to use the canonical Carbon white theme colors. */
+
+/* Header branding: D.A.G.R. = Medium weight, RISK = Light weight */
+.cds--header__name--prefix {
+    font-weight: 500 !important; /* IBM Plex Sans Medium */
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.cds--header__name {
+    font-weight: 300 !important; /* IBM Plex Sans Light for "| RISK" */
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+/* Tooltip positioning fix: prevent tooltips from going off-screen */
+.cds--header__global .cds--header__action:last-child .cds--assistive-text,
+.cds--header__global .cds--header__action:last-child .cds--tooltip,
+.cds--header__global .cds--popover--right .cds--popover-content,
+.cds--header__global .cds--header__action:last-child[aria-label]::before,
+.cds--header__global .cds--header__action:last-child[aria-label]::after {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* Override Carbon's tooltip positioning for last header action */
+.cds--header__global .cds--header__action:nth-last-child(1) .cds--tooltip,
+.cds--header__global .cds--header__action:nth-last-child(1) .cds--popover {
+    transform: translateX(-50%) !important;
+}
+
+/* General tooltip overflow fix */
+.cds--tooltip--visible,
+.cds--tooltip--showing {
+    max-width: calc(100vw - 1rem);
+}

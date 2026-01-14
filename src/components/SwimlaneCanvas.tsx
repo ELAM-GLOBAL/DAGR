@@ -12,6 +12,7 @@ interface SwimlaneCanvasProps {
     scientistLaneVisible: boolean;
     onNodeDrop?: (template: any, lane: string, laneIndex: number) => void;
     onEdgeCreate?: (sourceId: string, targetId: string) => void;
+    onEdgeDelete?: (edgeId: string) => void;
 }
 
 const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
@@ -20,13 +21,16 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
     onNodeSelect,
     selectedNodeId,
     scientistLaneVisible,
-    onNodeDrop
+    onNodeDrop,
+    onEdgeCreate,
+    onEdgeDelete
 }) => {
     const [nodeRects, setNodeRects] = useState<Record<string, Rect>>({});
     const canvasRef = useRef<HTMLDivElement>(null);
 
     // Highlight state
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+    const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
     // Connection Drag State
     const [isConnecting, setIsConnecting] = useState(false);
@@ -166,7 +170,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    pointerEvents: 'none',
+                    pointerEvents: 'visiblePainted',
                     zIndex: 1,
                     overflow: 'visible'
                 }}
@@ -193,13 +197,36 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     const isDimmed = highlightStatus === 'dimmed';
                     const isHighlighted = highlightStatus === 'highlighted';
 
+                    const isHovered = hoveredEdgeId === edge.id;
+
                     // Apply highlight styles
-                    const finalStroke = isHighlighted ? '#0f62fe' : strokeColor; // Blue 60 for highlight
-                    const finalWidth = isHighlighted ? 3 : 2;
+                    const finalStroke = isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : strokeColor); // Red on hover for delete
+                    const finalWidth = isHovered ? 3 : (isHighlighted ? 3 : 2);
                     const finalOpacity = isDimmed ? 0.2 : 1;
 
+                    const handleEdgeClick = () => {
+                        if (onEdgeDelete && confirm(`Delete connection from "${edge.source}" to "${edge.target}"?`)) {
+                            onEdgeDelete(edge.id);
+                        }
+                    };
+
                     return (
-                        <g key={edge.id} style={{ opacity: finalOpacity, transition: 'opacity 0.2s' }}>
+                        <g
+                            key={edge.id}
+                            style={{ opacity: finalOpacity, transition: 'opacity 0.2s', cursor: 'pointer' }}
+                            onMouseEnter={() => setHoveredEdgeId(edge.id)}
+                            onMouseLeave={() => setHoveredEdgeId(null)}
+                            onClick={handleEdgeClick}
+                        >
+                            {/* Invisible wider path for easier clicking */}
+                            <path
+                                d={path}
+                                fill="none"
+                                stroke="transparent"
+                                strokeWidth={16}
+                                style={{ pointerEvents: 'stroke' }}
+                            />
+                            {/* Visible path */}
                             <path
                                 d={path}
                                 fill="none"
@@ -207,21 +234,43 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                 strokeWidth={finalWidth}
                                 strokeDasharray={isDashed ? "4 4" : "none"}
                                 markerEnd={isDashed ? "url(#arrowhead-dashed)" : "url(#arrowhead)"}
+                                style={{ pointerEvents: 'none', transition: 'stroke 0.15s, stroke-width 0.15s' }}
                             />
                             {edge.label && (
                                 <foreignObject x={(sourceRect.x + sourceRect.width + targetRect.x) / 2 - 30} y={(sourceRect.y + targetRect.y) / 2 - 10} width="60" height="20">
                                     <div style={{
-                                        background: '#f4f4f4',
+                                        background: isHovered ? '#fff1f1' : '#f4f4f4',
                                         padding: '0px 4px',
                                         fontSize: '10px',
                                         textAlign: 'center',
                                         border: '1px solid #e0e0e0',
                                         borderRadius: '8px',
-                                        color: isHighlighted ? '#0f62fe' : '#525252',
-                                        fontWeight: isHighlighted ? 'bold' : 'normal',
-                                        borderColor: isHighlighted ? '#0f62fe' : '#e0e0e0'
+                                        color: isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : '#525252'),
+                                        fontWeight: isHighlighted || isHovered ? 'bold' : 'normal',
+                                        borderColor: isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : '#e0e0e0')
                                     }}>
                                         {edge.label}
+                                    </div>
+                                </foreignObject>
+                            )}
+                            {/* Delete hint on hover */}
+                            {isHovered && (
+                                <foreignObject
+                                    x={(sourceRect.x + sourceRect.width + targetRect.x) / 2 - 40}
+                                    y={(sourceRect.y + targetRect.y) / 2 + 8}
+                                    width="80"
+                                    height="20"
+                                >
+                                    <div style={{
+                                        background: '#da1e28',
+                                        color: 'white',
+                                        padding: '2px 6px',
+                                        fontSize: '10px',
+                                        textAlign: 'center',
+                                        borderRadius: '4px',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        Click to delete
                                     </div>
                                 </foreignObject>
                             )}
@@ -273,7 +322,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                             }}
                             style={{
                                 flex: 1,
-                                minWidth: '260px',
+                                minWidth: '220px',
                                 paddingRight: '1rem',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -285,11 +334,11 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                 <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '1px', borderRight: '1px dashed #e0e0e0' }} />
                             )}
 
-                            <h5 style={{ marginBottom: '1.5rem', color: '#525252', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px' }}>
+                            <h5 style={{ marginBottom: '1.5rem', color: '#525252', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px', textAlign: 'center' }}>
                                 {lane}
                             </h5>
 
-                            <div className="lane-content" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                            <div className="lane-content" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                                 {nodesByLane[index].map(node => {
                                     const highlightStatus = getHighlightStatus(node.id, 'node');
                                     const isDimmed = highlightStatus === 'dimmed';
