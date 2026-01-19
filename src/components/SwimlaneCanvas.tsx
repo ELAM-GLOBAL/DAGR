@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Modal } from '@carbon/react';
 import { LANES } from '../data/workflowTemplate';
 import NodeTile from './NodeTile';
 import { WidgetNode, WidgetEdge } from '../types';
@@ -36,6 +37,10 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
     const [isConnecting, setIsConnecting] = useState(false);
     const [connectionStartId, setConnectionStartId] = useState<string | null>(null);
     const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+
+    // Delete confirmation modal state
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [edgeToDelete, setEdgeToDelete] = useState<WidgetEdge | null>(null);
 
     const handleNodeClick = (id: string) => {
         if (isConnecting) {
@@ -170,17 +175,17 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     left: 0,
                     width: '100%',
                     height: '100%',
-                    pointerEvents: 'visiblePainted',
-                    zIndex: 1,
+                    pointerEvents: 'none',
+                    zIndex: 10,
                     overflow: 'visible'
                 }}
             >
                 <defs>
-                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="#8d8d8d" />
+                    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#8d8d8d" />
                     </marker>
-                    <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                        <polygon points="0 0, 10 3.5, 0 7" fill="#c6c6c6" />
+                    <marker id="arrowhead-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="#c6c6c6" />
                     </marker>
                 </defs>
                 {edges.map(edge => {
@@ -205,15 +210,16 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     const finalOpacity = isDimmed ? 0.2 : 1;
 
                     const handleEdgeClick = () => {
-                        if (onEdgeDelete && confirm(`Delete connection from "${edge.source}" to "${edge.target}"?`)) {
-                            onEdgeDelete(edge.id);
+                        if (onEdgeDelete) {
+                            setEdgeToDelete(edge);
+                            setDeleteModalOpen(true);
                         }
                     };
 
                     return (
                         <g
                             key={edge.id}
-                            style={{ opacity: finalOpacity, transition: 'opacity 0.2s', cursor: 'pointer' }}
+                            style={{ opacity: finalOpacity, transition: 'opacity 0.2s', cursor: 'pointer', pointerEvents: 'auto' }}
                             onMouseEnter={() => setHoveredEdgeId(edge.id)}
                             onMouseLeave={() => setHoveredEdgeId(null)}
                             onClick={handleEdgeClick}
@@ -250,27 +256,6 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                         borderColor: isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : '#e0e0e0')
                                     }}>
                                         {edge.label}
-                                    </div>
-                                </foreignObject>
-                            )}
-                            {/* Delete hint on hover */}
-                            {isHovered && (
-                                <foreignObject
-                                    x={(sourceRect.x + sourceRect.width + targetRect.x) / 2 - 40}
-                                    y={(sourceRect.y + targetRect.y) / 2 + 8}
-                                    width="80"
-                                    height="20"
-                                >
-                                    <div style={{
-                                        background: '#da1e28',
-                                        color: 'white',
-                                        padding: '2px 6px',
-                                        fontSize: '10px',
-                                        textAlign: 'center',
-                                        borderRadius: '4px',
-                                        fontWeight: 'bold'
-                                    }}>
-                                        Click to delete
                                     </div>
                                 </foreignObject>
                             )}
@@ -322,22 +307,32 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                             }}
                             style={{
                                 flex: 1,
-                                minWidth: '220px',
-                                paddingRight: '1rem',
+                                minWidth: '180px',
+                                paddingRight: '1.5rem',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                position: 'relative',
-                                background: 'transparent' // could add highlighting here on drag enter
+                                position: 'relative'
                             }}
                         >
+                            {/* Vertical lane divider */}
                             {index < LANES.length - 1 && (
                                 <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '1px', borderRight: '1px dashed #e0e0e0' }} />
                             )}
 
-                            <h5 style={{ marginBottom: '1.5rem', color: '#525252', textTransform: 'uppercase', fontSize: '12px', letterSpacing: '0.5px', textAlign: 'center' }}>
+                            {/* Lane header */}
+                            <h5 style={{
+                                marginBottom: '1.5rem',
+                                color: '#525252',
+                                textTransform: 'uppercase',
+                                fontSize: '11px',
+                                letterSpacing: '0.5px',
+                                textAlign: 'center',
+                                fontWeight: 600
+                            }}>
                                 {lane}
                             </h5>
 
+                            {/* Nodes stacked vertically */}
                             <div className="lane-content" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
                                 {nodesByLane[index].map(node => {
                                     const highlightStatus = getHighlightStatus(node.id, 'node');
@@ -365,6 +360,33 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     );
                 })}
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <Modal
+                open={deleteModalOpen}
+                modalHeading="Delete Connection"
+                primaryButtonText="Delete"
+                secondaryButtonText="Cancel"
+                danger
+                onRequestClose={() => {
+                    setDeleteModalOpen(false);
+                    setEdgeToDelete(null);
+                }}
+                onRequestSubmit={() => {
+                    if (edgeToDelete && onEdgeDelete) {
+                        onEdgeDelete(edgeToDelete.id);
+                    }
+                    setDeleteModalOpen(false);
+                    setEdgeToDelete(null);
+                }}
+            >
+                <p>Are you sure you want to delete this connection?</p>
+                {edgeToDelete && (
+                    <p style={{ marginTop: '0.5rem', color: '#525252', fontSize: '0.875rem' }}>
+                        From <strong>{edgeToDelete.source}</strong> to <strong>{edgeToDelete.target}</strong>
+                    </p>
+                )}
+            </Modal>
         </div>
     );
 };

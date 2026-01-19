@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button, Tile, DataTable, TableContainer, Table, TableHead, TableRow, TableHeader, TableBody, TableCell, TableToolbar, TableToolbarContent, TableToolbarSearch, TableToolbarMenu, TableToolbarAction } from '@carbon/react';
+import { Button, Tile, DataTable, TableContainer, Table, TableHead, TableRow, TableHeader, TableBody, TableCell } from '@carbon/react';
 import { Add, Connect, Activity, Dashboard } from '@carbon/icons-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -51,7 +50,7 @@ export const RiskHome = () => {
                             <h4 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Job Monitor</h4>
                             <p style={{ marginBottom: '2rem', color: '#525252' }}>View status of running and scheduled pipelines.</p>
                         </div>
-                        <Button kind="ghost" renderIcon={Activity} onClick={() => navigate('/packs/risk/job-monitor')}>
+                        <Button kind="tertiary" renderIcon={Activity} onClick={() => navigate('/packs/risk/job-monitor')}>
                             View Jobs
                         </Button>
                     </div>
@@ -67,9 +66,12 @@ export const RiskHome = () => {
                                 <Table {...getTableProps()} size="md">
                                     <TableHead>
                                         <TableRow>
-                                            {headers.map(header => (
-                                                <TableHeader key={header.key} {...getHeaderProps({ header })}>{header.header}</TableHeader>
-                                            ))}
+                                            {headers.map((header, idx) => {
+                                                const { key: _key, ...headerProps } = getHeaderProps({ header });
+                                                return (
+                                                    <TableHeader key={`header-${idx}`} {...headerProps}>{header.header}</TableHeader>
+                                                );
+                                            })}
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
@@ -105,7 +107,7 @@ export const RiskHome = () => {
 
 export const DataConnections = () => {
     return (
-            <div style={{ padding: '2rem' }}>
+        <div style={{ padding: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h1 style={{ fontWeight: 300, fontSize: '2.625rem' }}>Data Connections</h1>
                 <Button renderIcon={Add}>Add Connection</Button>
@@ -129,9 +131,12 @@ export const DataConnections = () => {
                         <Table {...getTableProps()}>
                             <TableHead>
                                 <TableRow>
-                                    {headers.map(header => (
-                                        <TableHeader key={header.key} {...getHeaderProps({ header })}>{header.header}</TableHeader>
-                                    ))}
+                                    {headers.map((header, idx) => {
+                                        const { key: _key, ...headerProps } = getHeaderProps({ header });
+                                        return (
+                                            <TableHeader key={`conn-header-${idx}`} {...headerProps}>{header.header}</TableHeader>
+                                        );
+                                    })}
                                 </TableRow>
                             </TableHead>
                             <TableBody>

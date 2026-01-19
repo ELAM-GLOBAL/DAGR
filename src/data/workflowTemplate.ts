@@ -6,8 +6,8 @@ export const INITIAL_WORKFLOW: WorkflowData = {
         { id: 'portfolio-holdings', title: 'Portfolio / Holdings', lane: 'Architect', laneIndex: 0, status: 'Configured' },
         { id: 'market-prices', title: 'Market Prices', lane: 'Architect', laneIndex: 0, status: 'Configured' },
         { id: 'fx-rates', title: 'FX Rates', lane: 'Architect', laneIndex: 0, status: 'Configured' },
-        { id: 'macro-data', title: 'Macro Data', lane: 'Architect', laneIndex: 0, status: 'Disabled', isDisabled: true, description: 'Not enabled in v1 prototype.' },
-        { id: 'benchmark', title: 'Benchmark', lane: 'Architect', laneIndex: 0, status: 'Optional', isOptional: true },
+        { id: 'macro-data', title: 'Macro Data', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup', description: 'Macro economic data feeds' },
+        { id: 'benchmark', title: 'Benchmark', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup' },
         { id: 'calendar-currency', title: 'Calendar & Currency', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup' },
 
         // Lane 2: Engineer
@@ -20,7 +20,7 @@ export const INITIAL_WORKFLOW: WorkflowData = {
 
         // Lane 3: Analyst (4-Domain Analytics)
         { id: 'analytics-config', title: 'Analytics Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Configure metrics, benchmarks, risk parameters' },
-        { id: 'benchmark-config', title: 'Benchmark Config', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true },
+        { id: 'benchmark-config', title: 'Benchmark Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
         { id: 'compute-performance', title: 'Performance Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'TWRR, IRR, CAGR, Active Return' },
         { id: 'compute-risk', title: 'Risk Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'VaR, ES, Vol, TE, Drawdown' },
         { id: 'compute-attribution', title: 'Attribution Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Brinson, Sector Contrib' },

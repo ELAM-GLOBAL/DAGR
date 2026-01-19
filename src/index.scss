@@ -74,3 +74,66 @@ body {
 .cds--tooltip--showing {
     max-width: calc(100vw - 1rem);
 }
+
+/* === UTILITY CLASSES === */
+
+/* Standard page header with Carbon spacing */
+.page-header {
+    margin-bottom: 2rem;
+    font-weight: 300;
+    font-size: 2.625rem;
+    color: var(--cds-text-primary, #161616);
+}
+
+/* Dashboard card container */
+.dashboard-card {
+    background: var(--cds-layer-01, #ffffff);
+    border: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-card__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+    background: var(--cds-layer-02, #f4f4f4);
+}
+
+.dashboard-card__title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--cds-text-primary, #161616);
+}
+
+.dashboard-card__content {
+    padding: 0.75rem;
+    flex: 1;
+    overflow: auto;
+}
+
+/* Workflow page toolbar - visual separation from header */
+.workflow-toolbar {
+    padding: 0.5rem 2rem;
+    border-bottom: 1px solid var(--cds-border-subtle-01, #e0e0e0);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background: var(--cds-layer-01, #ffffff);
+}
+
+/* Action tile grid for home page */
+.action-tile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+/* Status indicator colors using Carbon tokens */
+.status-success { color: var(--cds-support-success, #198038); }
+.status-warning { color: var(--cds-support-warning, #f1c21b); }
+.status-error { color: var(--cds-support-error, #da1e28); }
