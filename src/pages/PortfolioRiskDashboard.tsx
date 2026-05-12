@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-    ClickableTile,
     DataTable,
     Table,
     TableHead,
@@ -12,141 +11,43 @@ import {
     Tag,
     Button,
     IconButton,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
-    Dropdown
 } from '@carbon/react';
-import { Download, Settings, Draggable, OverflowMenuVertical, ChevronUp, ChevronDown } from '@carbon/icons-react';
-import { LineChart, SimpleBarChart, StackedBarChart, ComboChart } from '@carbon/charts-react';
+import { Download, Settings, Draggable, OverflowMenuVertical } from '@carbon/icons-react';
+import { LineChart, SimpleBarChart, GroupedBarChart } from '@carbon/charts-react';
 import { ScaleTypes } from '@carbon/charts';
-import '@carbon/charts-react/styles.css';
+import { useDagrTheme } from '../components/ThemeContext';
+import {
+    CUSTOMER_MARGIN,
+    LANE_PL,
+    DEMAND_SUPPLY_TREND,
+    SAMPLE_CHAMBERS,
+    SAMPLE_CULTIVARS,
+    KPI_SNAPSHOT,
+    ORDER_BACKLOG,
+    TAT_BY_CULTIVAR,
+    TAT_TREND,
+    INVENTORY_SPEND_TREND,
+    INVENTORY_SPEND_BREAKDOWN,
+} from '../data/phoenixEbra';
 
-// Returns & Ex Post Measures Data (like BarraOne Image 0)
-const returnsData = [
-    { id: '1', setting: 'Total - Brinson Attribution', portfolio: 'BMK Total', benchmark: 'INR', pfReturn: '4.24%', pfTrend: 'up', bmReturn: '4.29%', bmTrend: 'down', activeReturn: '-0.05%', activeTrend: 'down', mvStart: '218,231,607,009', mvEnd: '232,478,610,590' },
-    { id: '2', setting: 'Fixed Income - Brinson', portfolio: 'Crisil FI BM', benchmark: 'INR', pfReturn: '2.58%', pfTrend: 'up', bmReturn: '2.55%', bmTrend: 'up', activeReturn: '0.03%', activeTrend: 'up', mvStart: '186,432,763,365', mvEnd: '197,526,093,741' },
-    { id: '3', setting: 'Equity - Brinson Attribution', portfolio: 'NIFTY 200', benchmark: 'INR', pfReturn: '14.02%', pfTrend: 'up', bmReturn: '10.22%', bmTrend: 'up', activeReturn: '3.80%', activeTrend: 'up', mvStart: '28,562,117,661', mvEnd: '30,669,443,690' },
-    { id: '4', setting: 'Equity - Factor Attribution', portfolio: 'NIFTY 200', benchmark: 'INR', pfReturn: '14.02%', pfTrend: 'up', bmReturn: '10.22%', bmTrend: 'up', activeReturn: '3.80%', activeTrend: 'up', mvStart: '28,562,117,661', mvEnd: '30,669,443,690' },
-];
+const accent = '#3d5a4c';
 
-const returnsHeaders = [
-    { key: 'setting', header: 'Analysis Setting' },
-    { key: 'portfolio', header: 'Portfolio' },
-    { key: 'benchmark', header: 'Benchmark' },
-    { key: 'pfReturn', header: 'PF Return' },
-    { key: 'bmReturn', header: 'BM Return' },
-    { key: 'activeReturn', header: 'Active Return' },
-    { key: 'mvStart', header: 'MV Start' },
-    { key: 'mvEnd', header: 'MV End' },
-];
-
-// Active Returns Monthly Cumulative (like BarraOne Image 0)
-const activeReturnsData = [
-    { group: 'Equity', date: 'Apr', value: 0.5 },
-    { group: 'Equity', date: 'May', value: -0.8 },
-    { group: 'Equity', date: 'Jun', value: 0.3 },
-    { group: 'Fixed Income', date: 'Apr', value: 0.2 },
-    { group: 'Fixed Income', date: 'May', value: 0.1 },
-    { group: 'Fixed Income', date: 'Jun', value: 0.4 },
-    { group: 'Total', date: 'Apr', value: 0.7 },
-    { group: 'Total', date: 'May', value: -0.7 },
-    { group: 'Total', date: 'Jun', value: 0.7 },
-];
-
-// Attribution Summary Data (like BarraOne Image 1)
-const attributionSummaryData = [
-    { group: 'Allocation', category: 'Apr', value: 0.8 },
-    { group: 'Allocation', category: 'May', value: 3.2 },
-    { group: 'Allocation', category: 'Jun', value: 0.6 },
-    { group: 'Selection', category: 'Apr', value: -0.5 },
-    { group: 'Selection', category: 'May', value: 0.4 },
-    { group: 'Selection', category: 'Jun', value: 0.3 },
-    { group: 'Currency', category: 'Apr', value: 0.2 },
-    { group: 'Currency', category: 'May', value: 0.1 },
-    { group: 'Currency', category: 'Jun', value: -0.1 },
-];
-
-// Top/Bottom Assets Data (like BarraOne Image 2)
-const topAssetsData = [
-    { group: 'Portfolio', asset: 'HDFC BANK', value: 7.2 },
-    { group: 'Portfolio', asset: 'WOCKHARDT', value: 5.8 },
-    { group: 'Portfolio', asset: 'IDFC FIRST BANK', value: 4.2 },
-    { group: 'Portfolio', asset: 'MARUTI SUZUKI', value: 3.5 },
-    { group: 'Portfolio', asset: 'TCS', value: 3.1 },
-];
-
-const bottomAssetsData = [
-    { group: 'Portfolio', asset: 'RELIANCE', value: -2.8 },
-    { group: 'Portfolio', asset: 'INFOSYS', value: -1.9 },
-    { group: 'Portfolio', asset: 'BHARTI AIRTEL', value: -1.5 },
-    { group: 'Portfolio', asset: 'TATA MOTORS', value: -1.2 },
-    { group: 'Portfolio', asset: 'ICICI BANK', value: -0.8 },
-];
-
-// Factor Exposures Data (like BarraOne Image 3)
-const factorExposureData = [
-    { group: 'Portfolio', factor: 'Liquidity', value: 82 },
-    { group: 'Portfolio', factor: 'Leverage', value: 45 },
-    { group: 'Portfolio', factor: 'Long-Term', value: 38 },
-    { group: 'Portfolio', factor: 'Health Care', value: 25 },
-    { group: 'Benchmark', factor: 'Liquidity', value: 65 },
-    { group: 'Benchmark', factor: 'Leverage', value: 50 },
-    { group: 'Benchmark', factor: 'Long-Term', value: 42 },
-    { group: 'Benchmark', factor: 'Health Care', value: 30 },
-];
-
-// Ex Post Measures (like BarraOne Image 1)
-const exPostMeasures = [
-    { label: 'Variance', value: '0.01' },
-    { label: 'Portfolio Volatility', value: '10.18' },
-    { label: 'Benchmark Volatility (%)', value: '6.60' },
-    { label: 'Covariance', value: '0.01' },
-    { label: 'Correlation', value: '0.61' },
-    { label: 'R-Squared', value: '0.63' },
-    { label: 'Beta', value: '0.94' },
-    { label: 'Sharpe Ratio', value: '1.22' },
-    { label: 'Sortino Ratio', value: '1.83' },
-    { label: 'Treynor Ratio', value: '0.12' },
-    { label: 'Alpha (%)', value: '3.02' },
-    { label: "Jensen's Alpha (%)", value: '3.14' },
-    { label: 'Tracking Error (%)', value: '4.23' },
-];
-
-// Trailing Performance (like BarraOne Image 1)
-const trailingPerformance = [
-    { label: 'Portfolio', fullPeriod: '14.02%', mtd: '3.86%', qtd: '14.02%', ytd: '3.96%', m1: '14.02%', m3: '14.02%', m6: '14.02%', y1: '14.02%' },
-    { label: 'Benchmark', fullPeriod: '10.22%', mtd: '3.50%', qtd: '10.22%', ytd: '3.50%', m1: '10.22%', m3: '10.22%', m6: '10.22%', y1: '10.22%' },
-    { label: 'Active', fullPeriod: '3.80%', mtd: '0.46%', qtd: '3.80%', ytd: '0.46%', m1: '3.80%', m3: '3.80%', m6: '3.80%', y1: '3.80%' },
-];
-
-// Dashboard Card Component
 interface DashboardCardProps {
     title: string;
+    subtitle?: string;
     children: React.ReactNode;
-    onDragStart?: (e: React.DragEvent) => void;
-    onDragOver?: (e: React.DragEvent) => void;
-    onDrop?: (e: React.DragEvent) => void;
-    draggable?: boolean;
     id: string;
     headerRight?: React.ReactNode;
 }
 
-const DashboardCard: React.FC<DashboardCardProps> = ({ title, children, onDragStart, onDragOver, onDrop, draggable = true, id, headerRight }) => (
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, subtitle, children, id, headerRight }) => (
     <div
-        draggable={draggable}
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDrop={onDrop}
         data-card-id={id}
         style={{
-            background: '#fff',
-            border: '1px solid #e0e0e0',
+            background: 'var(--cds-layer-02)',
+            border: '1px solid var(--cds-border-subtle-00)',
             display: 'flex',
             flexDirection: 'column',
-            cursor: draggable ? 'grab' : 'default'
         }}
     >
         <div style={{
@@ -154,12 +55,19 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, children, onDragSt
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '0.5rem 0.75rem',
-            borderBottom: '1px solid #e0e0e0',
-            background: '#f4f4f4'
+            borderBottom: '1px solid var(--cds-border-subtle-00)',
+            background: 'var(--cds-layer-01)',
         }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {draggable && <Draggable size={14} style={{ color: '#8d8d8d' }} />}
-                <h4 style={{ fontSize: '0.75rem', fontWeight: 600, margin: 0, color: '#161616' }}>{title}</h4>
+                <Draggable size={12} style={{ color: 'var(--cds-icon-secondary)' }} />
+                <div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--cds-text-primary)' }}>
+                        {title}
+                    </div>
+                    {subtitle && (
+                        <div style={{ fontSize: '0.625rem', color: 'var(--cds-text-helper)' }}>{subtitle}</div>
+                    )}
+                </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 {headerRight}
@@ -174,135 +82,253 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ title, children, onDragSt
     </div>
 );
 
-// Trend Arrow Component
-const TrendArrow: React.FC<{ trend: string; value: string }> = ({ trend, value }) => (
-    <span style={{ display: 'flex', alignItems: 'center', gap: '2px', color: trend === 'up' ? '#198038' : '#da1e28' }}>
-        {trend === 'up' ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-        {value}
-    </span>
+const KpiTile = ({ label, value, sub, intent }: { label: string; value: string; sub?: string; intent?: 'good' | 'warn' | 'neutral' }) => (
+    <div style={{
+        background: 'var(--cds-layer-02)',
+        border: '1px solid var(--cds-border-subtle-00)',
+        borderLeft: `4px solid ${
+            intent === 'good' ? 'var(--cds-support-success, #24a148)'
+            : intent === 'warn' ? 'var(--cds-support-warning, #f1c21b)'
+            : accent
+        }`,
+        padding: '0.75rem',
+    }}>
+        <div style={{
+            fontSize: '0.625rem',
+            color: 'var(--cds-text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            marginBottom: '0.25rem',
+        }}>
+            {label}
+        </div>
+        <div style={{ fontSize: '1.375rem', fontWeight: 600, color: 'var(--cds-text-primary)' }}>{value}</div>
+        {sub && <div style={{ fontSize: '0.6875rem', color: 'var(--cds-text-helper)', marginTop: '0.125rem' }}>{sub}</div>}
+    </div>
 );
 
 const PortfolioRiskDashboard: React.FC = () => {
-    const [dateRange, setDateRange] = useState('Custom');
-    const [draggedCard, setDraggedCard] = useState<string | null>(null);
+    const [dateRange] = useState('Last 30 days');
+    const { chartTheme } = useDagrTheme();
 
-    const handleDragStart = (cardId: string) => (e: React.DragEvent) => {
-        setDraggedCard(cardId);
-        e.dataTransfer.effectAllowed = 'move';
-    };
+    const customerHeaders = [
+        { key: 'customer', header: 'Customer' },
+        { key: 'revenue', header: 'Revenue' },
+        { key: 'fulfillment', header: 'Fulfillment' },
+        { key: 'service', header: 'Service' },
+        { key: 'returns', header: 'Returns' },
+        { key: 'trueMargin', header: 'True Margin' },
+        { key: 'marginPct', header: 'Margin %' },
+    ];
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-    };
+    const customerRows = CUSTOMER_MARGIN.map((c, i) => ({
+        id: `cm-${i}`,
+        customer: c.customer,
+        revenue: `$${c.revenue.toLocaleString()}`,
+        fulfillment: `$${c.fulfillment.toLocaleString()}`,
+        service: `$${c.service.toLocaleString()}`,
+        returns: `$${c.returns.toLocaleString()}`,
+        trueMargin: `$${c.trueMargin.toLocaleString()}`,
+        marginPct: c.marginPct,
+    }));
 
-    const handleDrop = () => (e: React.DragEvent) => {
-        e.preventDefault();
-        setDraggedCard(null);
-    };
+    const laneHeaders = [
+        { key: 'lane', header: 'Lane' },
+        { key: 'carrier', header: 'Carrier' },
+        { key: 'shipments', header: 'Shipments' },
+        { key: 'costPerUnit', header: '$/unit' },
+        { key: 'damageRate', header: 'Damage' },
+        { key: 'marginImpact', header: 'Action' },
+    ];
+    const laneRows = LANE_PL.map((l, i) => ({
+        id: `lp-${i}`,
+        lane: l.lane,
+        carrier: l.carrier,
+        shipments: l.shipments,
+        costPerUnit: `$${l.costPerUnit.toFixed(2)}`,
+        damageRate: `${l.damageRate.toFixed(1)}%`,
+        marginImpact: l.marginImpact,
+    }));
 
-    const activeReturnsOptions = {
+    const chamberRows = SAMPLE_CHAMBERS.map(c => ({
+        id: c.id,
+        chamber: c.id,
+        site: c.site,
+        cultivar: c.cultivar,
+        temp: `${c.temp}°C`,
+        humidity: `${c.humidity}%`,
+        co2: `${c.co2} ppm`,
+        status: c.status,
+    }));
+
+    const chamberHeaders = [
+        { key: 'chamber', header: 'Chamber' },
+        { key: 'site', header: 'Site' },
+        { key: 'cultivar', header: 'Cultivar' },
+        { key: 'temp', header: 'Temp' },
+        { key: 'humidity', header: 'Humidity' },
+        { key: 'co2', header: 'CO₂' },
+        { key: 'status', header: 'Status' },
+    ];
+
+    const cultivarHeaders = [
+        { key: 'id', header: 'SKU' },
+        { key: 'name', header: 'Cultivar' },
+        { key: 'monthlyVolume', header: 'Volume/mo' },
+        { key: 'cogsPerPlantlet', header: 'COGS' },
+        { key: 'propSuccess', header: 'Success %' },
+    ];
+    const cultivarRows = SAMPLE_CULTIVARS.map(c => ({
+        id: c.id,
+        name: c.name,
+        monthlyVolume: c.monthlyVolume.toLocaleString(),
+        cogsPerPlantlet: `$${c.cogsPerPlantlet.toFixed(2)}`,
+        propSuccess: c.propSuccess,
+        triploid: c.triploid,
+    }));
+
+    const demandSupplyOptions = {
         title: '',
+        theme: chartTheme,
         axes: {
-            bottom: { mapsTo: 'date', scaleType: ScaleTypes.LABELS },
-            left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '%' }
+            bottom: { mapsTo: 'month', scaleType: ScaleTypes.LABELS },
+            left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: 'Units' },
         },
-        height: '180px',
-        color: { scale: { 'Equity': '#0f62fe', 'Fixed Income': '#198038', 'Total': '#6929c4' } },
-        legend: { alignment: 'center' as const },
+        height: '220px',
+        color: { scale: { 'Orders (units)': '#0f62fe', 'Propagation (units)': accent } },
         toolbar: { enabled: false },
-        points: { enabled: true, radius: 4 }
+        points: { enabled: true, radius: 4 },
     };
 
-    const attributionOptions = {
+    const marginByCustomerData = CUSTOMER_MARGIN.map(c => ({
+        group: 'Margin %',
+        customer: c.customer,
+        value: c.marginPct,
+    }));
+    const marginByCustomerOptions = {
         title: '',
+        theme: chartTheme,
         axes: {
-            bottom: { mapsTo: 'category', scaleType: ScaleTypes.LABELS },
-            left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '%' }
+            left: { mapsTo: 'customer', scaleType: ScaleTypes.LABELS },
+            bottom: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '%', domain: [0, 100] },
         },
-        height: '200px',
-        legend: { alignment: 'center' as const },
-        toolbar: { enabled: false }
-    };
-
-    const horizontalBarOptions = {
-        title: '',
-        axes: {
-            left: { mapsTo: 'asset', scaleType: ScaleTypes.LABELS },
-            bottom: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '%' }
-        },
-        height: '160px',
-        color: { scale: { 'Portfolio': '#0f62fe' } },
+        height: '240px',
+        color: { scale: { 'Margin %': '#0f62fe' } },
+        toolbar: { enabled: false },
         legend: { enabled: false },
-        toolbar: { enabled: false }
-    };
-
-    const bottomBarOptions = {
-        ...horizontalBarOptions,
-        color: { scale: { 'Portfolio': '#da1e28' } }
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 3rem)', background: '#f4f4f4' }}>
-            {/* Header Bar (like BarraOne) */}
+        <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'calc(100vh - 3rem)',
+            background: 'var(--cds-layer-01)',
+        }}>
+            {/* Header band */}
             <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1rem',
-                padding: '0.5rem 1rem',
-                background: '#fff',
-                borderBottom: '1px solid #e0e0e0'
+                padding: '0.75rem 1.25rem',
+                background: 'var(--cds-layer-02)',
+                borderBottom: '1px solid var(--cds-border-subtle-00)',
             }}>
-                <Tabs>
-                    <TabList aria-label="Dashboard Tabs">
-                        <Tab>Summary</Tab>
-                        <Tab>Group Exposure Analysis</Tab>
-                        <Tab>Asset Exposure Analysis</Tab>
-                        <Tab>Factor Exposure Analysis</Tab>
-                        <Tab>Attribution Summary</Tab>
-                        <Tab>Attribution Trend</Tab>
-                    </TabList>
-                </Tabs>
+                <div>
+                    <div style={{
+                        fontSize: '0.625rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        color: 'var(--cds-text-secondary)',
+                    }}>
+                        Executive scorecard · Adam Meek
+                    </div>
+                    <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 400, color: 'var(--cds-text-primary)' }}>
+                        Phoenix Ebra · Backlog, TAT, Inventory & Margin
+                    </h2>
+                </div>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#525252' }}>Date Range:</span>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--cds-text-secondary)' }}>Range:</span>
                     <Tag type="outline" size="sm">{dateRange}</Tag>
                     <Button kind="ghost" size="sm" renderIcon={Download} hasIconOnly iconDescription="Export" />
                     <Button kind="ghost" size="sm" renderIcon={Settings} hasIconOnly iconDescription="Settings" />
                 </div>
             </div>
 
-            {/* Main Content */}
+            {/* Main content */}
             <div style={{ flex: 1, padding: '1rem', overflow: 'auto' }}>
-                {/* Returns & Ex Post Measures Table */}
+
+                {/* KPI strip — executive view */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                    gap: '0.75rem',
+                    marginBottom: '1rem',
+                }}>
+                    <KpiTile label="Order Backlog" value={`$${(KPI_SNAPSHOT.orderBacklogValue / 1000).toFixed(0)}K`} sub={`${KPI_SNAPSHOT.orderBacklogUnits.toLocaleString()} units · ${KPI_SNAPSHOT.avgDaysToPromise}d avg`} intent="good" />
+                    <KpiTile label="Order-to-Ship TAT" value={`${KPI_SNAPSHOT.turnaroundDays}d`} sub={`Target ${KPI_SNAPSHOT.turnaroundTarget}d`} intent="good" />
+                    <KpiTile label="On-Time Fulfillment" value={`${KPI_SNAPSHOT.onTimeFulfillment}%`} sub="Last 30 days" intent="good" />
+                    <KpiTile label="Revenue (MTD)" value={`$${(KPI_SNAPSHOT.monthlyRevenue / 1000).toFixed(0)}K`} sub={`+${KPI_SNAPSHOT.revenueGrowthMoM}% MoM`} intent="good" />
+                    <KpiTile label="Inventory (MTD)" value={`$${(KPI_SNAPSHOT.inventorySpendMtd / 1000).toFixed(0)}K`} sub="WIP + media + consumables" />
+                    <KpiTile label="Projected 30d" value={`$${(KPI_SNAPSHOT.inventorySpendNext30d / 1000).toFixed(0)}K`} sub="Driven by backlog burn" />
+                    <KpiTile label="Blended Margin" value={`${KPI_SNAPSHOT.grossMargin}%`} sub="Target 88%" intent="good" />
+                    <KpiTile label="Breakeven Progress" value={`${Math.round(KPI_SNAPSHOT.currentMonthlyPlantlets / KPI_SNAPSHOT.breakevenTarget * 100)}%`} sub={`${(KPI_SNAPSHOT.currentMonthlyPlantlets / 1000).toFixed(0)}K of ${(KPI_SNAPSHOT.breakevenTarget / 1000).toFixed(0)}K`} />
+                </div>
+
+                {/* Order Backlog — what's committed but not yet shipped */}
                 <DashboardCard
-                    id="returns-table"
-                    title="Returns & Ex Post Measures – Reporting Period"
-                    onDragStart={handleDragStart('returns-table')}
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop()}
+                    id="order-backlog"
+                    title="Order Backlog — Committed Deferred Revenue"
+                    subtitle="What's been sold but not yet delivered. Days-to-promise is the customer-experience clock."
                 >
-                    <DataTable rows={returnsData} headers={returnsHeaders} size="sm">
-                        {({ rows, headers, getTableProps, getHeaderProps, getRowProps }) => (
+                    <DataTable rows={ORDER_BACKLOG.map(o => ({
+                        id: o.id,
+                        customer: o.customer,
+                        cultivar: o.cultivar,
+                        sku: o.sku,
+                        qty: o.qty.toLocaleString(),
+                        value: `$${o.value.toLocaleString()}`,
+                        daysToPromise: o.daysToPromise,
+                        status: o.status,
+                    }))} headers={[
+                        { key: 'id', header: 'Backlog ID' },
+                        { key: 'customer', header: 'Customer' },
+                        { key: 'cultivar', header: 'Cultivar' },
+                        { key: 'qty', header: 'Qty' },
+                        { key: 'value', header: 'Value' },
+                        { key: 'daysToPromise', header: 'Days to Promise' },
+                        { key: 'status', header: 'Status' },
+                    ]} size="sm">
+                        {({ rows, headers, getTableProps, getHeaderProps }) => (
                             <TableContainer>
                                 <Table {...getTableProps()} size="sm">
                                     <TableHead>
                                         <TableRow>
-                                            {headers.map((header, i) => (
-                                                <TableHeader key={`h-${i}`} {...getHeaderProps({ header })} style={{ fontSize: '0.6875rem' }}>
-                                                    {header.header}
-                                                </TableHeader>
-                                            ))}
+                                            {headers.map((header, idx) => {
+                                                const { key: _k, ...hp } = getHeaderProps({ header });
+                                                return <TableHeader key={`bh-${idx}`} {...hp} style={{ fontSize: '0.6875rem' }}>{header.header}</TableHeader>;
+                                            })}
                                         </TableRow>
                                     </TableHead>
                                     <TableBody>
                                         {rows.map((row, ri) => (
-                                            <TableRow key={`r-${ri}`} {...getRowProps({ row })}>
-                                                {row.cells.map((cell, ci) => (
-                                                    <TableCell key={`c-${ri}-${ci}`} style={{ fontSize: '0.6875rem' }}>
-                                                        {cell.info.header === 'activeReturn' ? (
-                                                            <TrendArrow
-                                                                trend={returnsData[ri].activeTrend}
-                                                                value={cell.value}
-                                                            />
+                                            <TableRow key={row.id}>
+                                                {row.cells.map(cell => (
+                                                    <TableCell key={cell.id} style={{ fontSize: '0.6875rem' }}>
+                                                        {cell.info.header === 'status' ? (
+                                                            <Tag
+                                                                type={ORDER_BACKLOG[ri].status === 'Ready' ? 'green' : ORDER_BACKLOG[ri].status === 'In Chamber' ? 'blue' : 'purple'}
+                                                                size="sm"
+                                                            >
+                                                                {ORDER_BACKLOG[ri].status}
+                                                            </Tag>
+                                                        ) : cell.info.header === 'daysToPromise' ? (
+                                                            <Tag
+                                                                type={ORDER_BACKLOG[ri].daysToPromise <= 21 ? 'green' : ORDER_BACKLOG[ri].daysToPromise <= 45 ? 'blue' : 'red'}
+                                                                size="sm"
+                                                            >
+                                                                {ORDER_BACKLOG[ri].daysToPromise}d
+                                                            </Tag>
                                                         ) : cell.value}
                                                     </TableCell>
                                                 ))}
@@ -315,127 +341,349 @@ const PortfolioRiskDashboard: React.FC = () => {
                     </DataTable>
                 </DashboardCard>
 
-                {/* Second Row - Charts */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                    {/* Active Returns Chart */}
+                {/* TAT + Inventory spend (executive operational levers) */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                }}>
                     <DashboardCard
-                        id="active-returns"
-                        title="Active Returns - Monthly Cumulative"
-                        onDragStart={handleDragStart('active-returns')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
+                        id="tat-trend"
+                        title="Order-to-Ship TAT Trend"
+                        subtitle="Days from order receipt to shipment, from ready inventory. Target 10 days."
                     >
-                        <LineChart data={activeReturnsData} options={activeReturnsOptions} />
-                    </DashboardCard>
-
-                    {/* Attribution Summary Chart */}
-                    <DashboardCard
-                        id="attribution"
-                        title="Attribution Summary Chart"
-                        onDragStart={handleDragStart('attribution')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
-                    >
-                        <StackedBarChart data={attributionSummaryData} options={attributionOptions} />
-                    </DashboardCard>
-
-                    {/* Ex Post Measures */}
-                    <DashboardCard
-                        id="ex-post"
-                        title="Ex Post Measures"
-                        onDragStart={handleDragStart('ex-post')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
-                    >
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.25rem', fontSize: '0.6875rem' }}>
-                            {exPostMeasures.map((m, i) => (
-                                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.25rem 0', borderBottom: '1px solid #e0e0e0' }}>
-                                    <span style={{ color: '#525252' }}>{m.label}</span>
-                                    <span style={{ fontWeight: 600 }}>{m.value}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </DashboardCard>
-                </div>
-
-                {/* Third Row - Top/Bottom Assets */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-                    <DashboardCard
-                        id="top-assets"
-                        title="Top Assets by Portfolio Weight"
-                        onDragStart={handleDragStart('top-assets')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
-                    >
-                        <SimpleBarChart data={topAssetsData} options={horizontalBarOptions} />
+                        <LineChart
+                            data={TAT_TREND}
+                            options={{
+                                title: '',
+                                theme: chartTheme,
+                                axes: {
+                                    bottom: { mapsTo: 'month', scaleType: ScaleTypes.LABELS },
+                                    left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: 'Days' },
+                                },
+                                height: '220px',
+                                color: { scale: { 'Actual': accent, 'Target': '#fa4d56' } },
+                                toolbar: { enabled: false },
+                                points: { enabled: true, radius: 4 },
+                            }}
+                        />
                     </DashboardCard>
 
                     <DashboardCard
-                        id="bottom-assets"
-                        title="Bottom Assets by Active Weight"
-                        onDragStart={handleDragStart('bottom-assets')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
+                        id="inventory-spend"
+                        title="Inventory Spend — Actuals & Projection"
+                        subtitle="WIP + media + consumables. Projection driven by current backlog."
                     >
-                        <SimpleBarChart data={bottomAssetsData} options={bottomBarOptions} />
+                        <LineChart
+                            data={INVENTORY_SPEND_TREND}
+                            options={{
+                                title: '',
+                                theme: chartTheme,
+                                axes: {
+                                    bottom: { mapsTo: 'month', scaleType: ScaleTypes.LABELS },
+                                    left: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '$K' },
+                                },
+                                height: '220px',
+                                color: { scale: { 'Actual ($K)': '#0f62fe', 'Projected ($K)': '#fa4d56' } },
+                                toolbar: { enabled: false },
+                                points: { enabled: true, radius: 4 },
+                            }}
+                        />
                     </DashboardCard>
                 </div>
 
-                {/* Fourth Row - Trailing Performance Table */}
+                {/* TAT by cultivar + inventory breakdown */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                }}>
+                    <DashboardCard
+                        id="tat-by-cultivar"
+                        title="Propagation Cycle by Cultivar (days)"
+                        subtitle="Meristem-to-ready inventory time. Drives backlog clearance, not order-to-ship TAT."
+                    >
+                        <GroupedBarChart
+                            data={TAT_BY_CULTIVAR.flatMap(t => [
+                                { group: 'Current', cultivar: t.cultivar, value: t.current },
+                                { group: 'Target', cultivar: t.cultivar, value: t.target },
+                            ])}
+                            options={{
+                                title: '',
+                                theme: chartTheme,
+                                axes: {
+                                    left: { mapsTo: 'cultivar', scaleType: ScaleTypes.LABELS },
+                                    bottom: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: 'Days' },
+                                },
+                                height: '240px',
+                                color: { scale: { 'Current': accent, 'Target': '#c6c6c6' } },
+                                toolbar: { enabled: false },
+                            } as any}
+                        />
+                    </DashboardCard>
+
+                    <DashboardCard
+                        id="inventory-breakdown"
+                        title="Inventory Spend Breakdown — This Month"
+                        subtitle="Where the $342K is going."
+                    >
+                        <SimpleBarChart
+                            data={INVENTORY_SPEND_BREAKDOWN.map(b => ({ group: b.group, value: b.value }))}
+                            options={{
+                                title: '',
+                                theme: chartTheme,
+                                axes: {
+                                    left: { mapsTo: 'group', scaleType: ScaleTypes.LABELS },
+                                    bottom: { mapsTo: 'value', scaleType: ScaleTypes.LINEAR, title: '$K' },
+                                },
+                                height: '240px',
+                                color: { scale: { 'WIP Plantlets': accent, 'Tissue Culture Media': '#0f62fe', 'Sterile Consumables': '#8a3ffc', 'Genetic Assay Kits': '#f1c21b', 'Packaging & Biora Inserts': '#fa4d56' } },
+                                toolbar: { enabled: false },
+                                legend: { enabled: false },
+                            } as any}
+                        />
+                    </DashboardCard>
+                </div>
+
+                {/* Customer margin table — the moat metric */}
+                <div style={{ marginTop: '1rem' }} />
+                <DashboardCard
+                    id="customer-margin"
+                    title="True Margin by Customer — Day-1 join (OrderFlow + ShipTrack)"
+                    subtitle="Revenue minus fulfillment, service, and returns. Margin % tag shows where to double down vs renegotiate."
+                >
+                    <DataTable rows={customerRows} headers={customerHeaders} size="sm">
+                        {({ rows, headers, getTableProps, getHeaderProps }) => (
+                            <TableContainer>
+                                <Table {...getTableProps()} size="sm">
+                                    <TableHead>
+                                        <TableRow>
+                                            {headers.map((header, idx) => {
+                                                const { key: _k, ...hp } = getHeaderProps({ header });
+                                                return <TableHeader key={`ch-${idx}`} {...hp} style={{ fontSize: '0.6875rem' }}>{header.header}</TableHeader>;
+                                            })}
+                                        </TableRow>
+                                    </TableHead>
+                                    <TableBody>
+                                        {rows.map((row, ri) => (
+                                            <TableRow key={row.id}>
+                                                {row.cells.map(cell => (
+                                                    <TableCell key={cell.id} style={{ fontSize: '0.6875rem' }}>
+                                                        {cell.info.header === 'marginPct' ? (
+                                                            <Tag
+                                                                type={CUSTOMER_MARGIN[ri].marginPct >= 75 ? 'green' : CUSTOMER_MARGIN[ri].marginPct >= 60 ? 'blue' : 'red'}
+                                                                size="sm"
+                                                            >
+                                                                {CUSTOMER_MARGIN[ri].marginPct.toFixed(1)}%
+                                                            </Tag>
+                                                        ) : cell.value}
+                                                    </TableCell>
+                                                ))}
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
+                        )}
+                    </DataTable>
+                </DashboardCard>
+
+                {/* Charts row */}
                 <div style={{ marginTop: '1rem' }}>
                     <DashboardCard
-                        id="trailing"
-                        title="Trailing Performance"
-                        onDragStart={handleDragStart('trailing')}
-                        onDragOver={handleDragOver}
-                        onDrop={handleDrop()}
+                        id="demand-supply"
+                        title="Demand ↔ Supply Window"
+                        subtitle="Order velocity vs. propagation throughput. Misaligned windows turn backlog into lost margin."
                     >
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.6875rem' }}>
-                            <thead>
-                                <tr style={{ background: '#f4f4f4' }}>
-                                    <th style={{ padding: '0.5rem', textAlign: 'left', borderBottom: '1px solid #e0e0e0' }}>Base Return</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>Full Period</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>MTD</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>QTD</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>YTD</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>1 Month</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>3 Months</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>6 Months</th>
-                                    <th style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>1 Year</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {trailingPerformance.map((row, i) => (
-                                    <tr key={i} style={{ background: i === 2 ? '#e5f6ff' : 'transparent' }}>
-                                        <td style={{ padding: '0.5rem', fontWeight: 600, borderBottom: '1px solid #e0e0e0' }}>{row.label}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0', color: row.label === 'Active' ? '#198038' : '#161616' }}>{row.fullPeriod}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.mtd}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.qtd}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.ytd}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.m1}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.m3}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.m6}</td>
-                                        <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #e0e0e0' }}>{row.y1}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                        <LineChart data={DEMAND_SUPPLY_TREND} options={demandSupplyOptions} />
+                    </DashboardCard>
+                </div>
+
+                {/* Lane P&L and margin distribution */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                }}>
+                    <DashboardCard
+                        id="lane-pl"
+                        title="Carrier & Lane P&L"
+                        subtitle="Cost per unit and damage rate per origin-destination."
+                    >
+                        <DataTable rows={laneRows} headers={laneHeaders} size="sm">
+                            {({ rows, headers, getTableProps, getHeaderProps }) => (
+                                <TableContainer>
+                                    <Table {...getTableProps()} size="sm">
+                                        <TableHead>
+                                            <TableRow>
+                                                {headers.map((header, idx) => {
+                                                    const { key: _k, ...hp } = getHeaderProps({ header });
+                                                    return <TableHeader key={`lh-${idx}`} {...hp} style={{ fontSize: '0.6875rem' }}>{header.header}</TableHeader>;
+                                                })}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {rows.map((row, ri) => (
+                                                <TableRow key={row.id}>
+                                                    {row.cells.map(cell => (
+                                                        <TableCell key={cell.id} style={{ fontSize: '0.6875rem' }}>
+                                                            {cell.info.header === 'marginImpact' ? (
+                                                                <Tag
+                                                                    type={
+                                                                        LANE_PL[ri].marginImpact === 'Strong' ? 'green'
+                                                                        : LANE_PL[ri].marginImpact === 'Watch' ? 'blue'
+                                                                        : 'red'
+                                                                    }
+                                                                    size="sm"
+                                                                >
+                                                                    {LANE_PL[ri].marginImpact}
+                                                                </Tag>
+                                                            ) : cell.value}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            )}
+                        </DataTable>
+                    </DashboardCard>
+
+                    <DashboardCard
+                        id="margin-distribution"
+                        title="Margin % by Customer"
+                        subtitle="Anything under 60% is a renegotiate-or-drop candidate."
+                    >
+                        <GroupedBarChart
+                            data={marginByCustomerData}
+                            options={marginByCustomerOptions as any}
+                        />
+                    </DashboardCard>
+                </div>
+
+                {/* Operations detail — secondary, for drill-down */}
+                <div style={{
+                    marginTop: '2rem',
+                    paddingTop: '1rem',
+                    borderTop: '1px solid var(--cds-border-subtle-00)',
+                }}>
+                    <div style={{
+                        fontSize: '0.625rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        color: 'var(--cds-text-secondary)',
+                        marginBottom: '0.25rem',
+                        fontWeight: 700,
+                    }}>
+                        Operations detail
+                    </div>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--cds-text-helper)' }}>
+                        Plant-manager / shift view. Surfaces upward to the executive scorecard only on exceptions.
+                    </div>
+                </div>
+
+                {/* Chamber + cultivar tables (Day-N) */}
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '1rem',
+                    marginTop: '1rem',
+                }}>
+                    <DashboardCard
+                        id="chambers"
+                        title="Chamber Telemetry (live)"
+                        subtitle="Streamed from ChamberOS at 99% accuracy SLA"
+                    >
+                        <DataTable rows={chamberRows} headers={chamberHeaders} size="sm">
+                            {({ rows, headers, getTableProps, getHeaderProps }) => (
+                                <TableContainer>
+                                    <Table {...getTableProps()} size="sm">
+                                        <TableHead>
+                                            <TableRow>
+                                                {headers.map((header, idx) => {
+                                                    const { key: _k, ...hp } = getHeaderProps({ header });
+                                                    return <TableHeader key={`chmh-${idx}`} {...hp} style={{ fontSize: '0.6875rem' }}>{header.header}</TableHeader>;
+                                                })}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {rows.map(row => (
+                                                <TableRow key={row.id}>
+                                                    {row.cells.map(cell => (
+                                                        <TableCell key={cell.id} style={{ fontSize: '0.6875rem' }}>
+                                                            {cell.info.header === 'status' ? (
+                                                                <Tag type={cell.value === 'Nominal' ? 'green' : 'blue'} size="sm">{cell.value}</Tag>
+                                                            ) : cell.value}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            )}
+                        </DataTable>
+                    </DashboardCard>
+
+                    <DashboardCard
+                        id="cultivars"
+                        title="Cultivar Production"
+                        subtitle="Propagation success and unit economics per cultivar"
+                    >
+                        <DataTable rows={cultivarRows} headers={cultivarHeaders} size="sm">
+                            {({ rows, headers, getTableProps, getHeaderProps }) => (
+                                <TableContainer>
+                                    <Table {...getTableProps()} size="sm">
+                                        <TableHead>
+                                            <TableRow>
+                                                {headers.map((header, idx) => {
+                                                    const { key: _k, ...hp } = getHeaderProps({ header });
+                                                    return <TableHeader key={`cvh-${idx}`} {...hp} style={{ fontSize: '0.6875rem' }}>{header.header}</TableHeader>;
+                                                })}
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {rows.map((row, ri) => (
+                                                <TableRow key={row.id}>
+                                                    {row.cells.map(cell => (
+                                                        <TableCell key={cell.id} style={{ fontSize: '0.6875rem' }}>
+                                                            {cell.info.header === 'propSuccess' ? (
+                                                                <Tag
+                                                                    type={SAMPLE_CULTIVARS[ri].propSuccess >= 92 ? 'green' : SAMPLE_CULTIVARS[ri].propSuccess >= 86 ? 'blue' : 'red'}
+                                                                    size="sm"
+                                                                >
+                                                                    {SAMPLE_CULTIVARS[ri].propSuccess.toFixed(1)}%
+                                                                </Tag>
+                                                            ) : cell.value}
+                                                        </TableCell>
+                                                    ))}
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            )}
+                        </DataTable>
                     </DashboardCard>
                 </div>
             </div>
 
-            {/* Footer Status Bar */}
+            {/* Status bar */}
             <div style={{
                 padding: '0.25rem 1rem',
-                background: '#e0e0e0',
-                borderTop: '1px solid #c6c6c6',
+                background: 'var(--cds-layer-accent-01)',
+                borderTop: '1px solid var(--cds-border-subtle-01)',
                 display: 'flex',
                 justifyContent: 'space-between',
                 fontSize: '0.6875rem',
-                color: '#525252'
+                color: 'var(--cds-text-secondary)',
             }}>
-                <span>● Ready</span>
-                <span>60 of 60 rows • 0 marked • 23 columns • MultiFund Monthly Cumulative Performance 1 year</span>
+                <span>● Ready · OrderFlow + ShipTrack live · LIMS connected · ChamberOS / Robotics MES planned</span>
+                <span>Phoenix Ebra workspace · 8 customers · 24 chambers · 7 cultivars</span>
             </div>
         </div>
     );
