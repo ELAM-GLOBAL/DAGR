@@ -380,6 +380,115 @@ export const INVENTORY_SPEND_TREND = [
     { group: 'Projected ($K)', month: 'Aug', value: 452 },
 ];
 
+/* Phoenix Ebra site footprint — for the home-page operator map */
+export type SiteStatus = 'live' | 'commissioning' | 'planned';
+
+export interface Site {
+    id: string;
+    name: string;
+    region: string;
+    role: string;
+    lat: number;
+    lng: number;
+    status: SiteStatus;
+    commissionedAt: string;
+    chambers: number;
+    monthlyVolume: number;
+    cultivars: string[];
+    tatDays: number;
+    contamination: number;
+    margin: number;
+    note: string;
+}
+
+export const SITES: Site[] = [
+    {
+        id: 'tx',
+        name: 'Dallas HQ',
+        region: 'Texas',
+        role: 'HQ · Lab · Primary production',
+        lat: 32.78,
+        lng: -96.80,
+        status: 'live',
+        commissionedAt: '2024-03',
+        chambers: 12,
+        monthlyVolume: 48000,
+        cultivars: ['Agave', 'Hemp', 'Pistachio'],
+        tatDays: 12,
+        contamination: 0.4,
+        margin: 84.1,
+        note: 'Anchor site. Genetic verification + 3n triploid line live here.',
+    },
+    {
+        id: 'tn',
+        name: 'Knoxville',
+        region: 'Tennessee',
+        role: 'Southeast hub',
+        lat: 35.96,
+        lng: -83.92,
+        status: 'live',
+        commissionedAt: '2025-01',
+        chambers: 4,
+        monthlyVolume: 18400,
+        cultivars: ['Peach', 'Blueberry'],
+        tatDays: 13,
+        contamination: 0.7,
+        margin: 81.2,
+        note: 'Serves stone-fruit growers across TN, KY, NC, GA.',
+    },
+    {
+        id: 'wi',
+        name: 'La Crosse',
+        region: 'Western Wisconsin',
+        role: 'Midwest hub',
+        lat: 43.81,
+        lng: -91.24,
+        status: 'commissioning',
+        commissionedAt: '2026-06',
+        chambers: 3,
+        monthlyVolume: 14200,
+        cultivars: ['Hemp', 'Pistachio'],
+        tatDays: 18,
+        contamination: 0.9,
+        margin: 78.6,
+        note: 'Commissioning. First yields expected June. Targets dairy-belt specialty growers.',
+    },
+    {
+        id: 'or',
+        name: 'Portland',
+        region: 'Oregon',
+        role: 'Pacific NW hub',
+        lat: 45.52,
+        lng: -122.68,
+        status: 'live',
+        commissionedAt: '2025-08',
+        chambers: 3,
+        monthlyVolume: 12800,
+        cultivars: ['Blueberry', 'Orchid'],
+        tatDays: 14,
+        contamination: 0.5,
+        margin: 82.7,
+        note: 'Serves PNW orchards + WA/OR ornamental nurseries.',
+    },
+    {
+        id: 'fl',
+        name: 'Tallahassee',
+        region: 'Florida',
+        role: 'Southeast · Caribbean export',
+        lat: 30.44,
+        lng: -84.28,
+        status: 'commissioning',
+        commissionedAt: '2026-08',
+        chambers: 2,
+        monthlyVolume: 12600,
+        cultivars: ['Orchid', 'Grape (3n)'],
+        tatDays: 16,
+        contamination: 0.8,
+        margin: 80.4,
+        note: 'Commissioning. Caribbean ornamentals + table-grape pilot.',
+    },
+];
+
 /* Inventory spend breakdown by category (current month) */
 export const INVENTORY_SPEND_BREAKDOWN = [
     { group: 'WIP Plantlets', key: 'May', value: 232 },

@@ -26,6 +26,7 @@ import {
     CUSTOMER_MARGIN,
     OUTPUTS,
 } from '../data/phoenixEbra';
+import LocationMap from '../components/LocationMap';
 
 const accent = '#3d5a4c';
 
@@ -161,6 +162,11 @@ export const PhoenixEbraHome = () => {
                 <Kpi label="Projected Spend (30d)" value={`$${(KPI_SNAPSHOT.inventorySpendNext30d / 1000).toFixed(0)}K`} sub="Driven by backlog burn" />
                 <Kpi label="Blended Margin" value={`${KPI_SNAPSHOT.grossMargin}%`} sub={`ASP $${KPI_SNAPSHOT.blendedAsp} · COGS $${KPI_SNAPSHOT.blendedCogs}`} intent="good" />
                 <Kpi label="Breakeven Progress" value={`${Math.round(KPI_SNAPSHOT.currentMonthlyPlantlets / KPI_SNAPSHOT.breakevenTarget * 100)}%`} sub={`${(KPI_SNAPSHOT.currentMonthlyPlantlets / 1000).toFixed(0)}K of ${(KPI_SNAPSHOT.breakevenTarget / 1000).toFixed(0)}K/mo`} />
+            </div>
+
+            {/* Operator map — Phoenix Ebra site footprint */}
+            <div style={{ marginBottom: '2rem' }}>
+                <LocationMap />
             </div>
 
             {/* Two-column: Day-1 narrative & data sources */}
