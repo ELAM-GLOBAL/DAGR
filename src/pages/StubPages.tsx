@@ -112,7 +112,7 @@ export const PhoenixEbraHome = () => {
                 }}>
                     <span>Customer workspace</span>
                     <span>·</span>
-                    <span>Texas, USA</span>
+                    <span>Tallahassee, FL</span>
                     <span>·</span>
                     <span>Discovery sprint output</span>
                 </div>
