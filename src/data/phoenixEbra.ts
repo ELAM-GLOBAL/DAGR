@@ -19,8 +19,8 @@ export const SOURCES: SourceSystem[] = [
     { id: 'orderflow', name: "OrderFlow", operator: "Kevin's platform", description: 'Customer orders, line items, ASP, billing', status: 'live', phase: 'day-1' },
     { id: 'shiptrack', name: 'ShipTrack', operator: "Scott's platform", description: 'Shipments, carriers, lanes, fulfillment cost', status: 'live', phase: 'day-1' },
     { id: 'lims', name: 'LIMS', operator: 'Phoenix Ebra lab', description: 'Genetic assays, sterility events, lot intake', status: 'connected', phase: 'day-n' },
-    { id: 'chamberos', name: 'ChamberOS', operator: 'Biora chambers', description: 'Temperature, humidity, CO₂, PAR telemetry', status: 'connected', phase: 'day-n' },
-    { id: 'mes', name: 'Robotics MES', operator: 'Propagation cell PLCs', description: 'Bot cycle time, throughput, abort events', status: 'connected', phase: 'day-n' },
+    { id: 'chamberos', name: 'ChamberOS', operator: 'Biora chambers', description: 'Temperature, humidity, CO₂, PAR telemetry', status: 'planned', phase: 'day-n' },
+    { id: 'mes', name: 'Robotics MES', operator: 'Propagation cell PLCs', description: 'Bot cycle time, throughput, abort events', status: 'planned', phase: 'day-n' },
     { id: 'erp', name: 'ERP', operator: 'Finance', description: 'COGS, inventory, returns, service costs', status: 'planned', phase: 'day-n' },
     { id: 'usda', name: 'USDA APHIS Feed', operator: 'Regulatory', description: 'Pathogen-free certification, phyto registries', status: 'planned', phase: 'day-n' },
 ];
@@ -302,16 +302,92 @@ export const SAMPLE_CHAMBERS = [
 ];
 
 export const KPI_SNAPSHOT = {
+    /* Commercial */
     monthlyRevenue: 26000,
-    breakevenTarget: 650000,
-    currentMonthlyPlantlets: 106000,
+    revenueGrowthMoM: 18.2,
+    orderBacklogValue: 295500,         // $ committed deferred revenue
+    orderBacklogUnits: 15800,
+    avgDaysToPromise: 31,
+    /* Operations */
+    turnaroundDays: 14,                 // blended order-to-ship from inventory
+    turnaroundTarget: 10,
+    onTimeFulfillment: 91.4,            // %
+    /* Capital & inventory */
+    inventorySpendMtd: 342000,
+    inventorySpendNext30d: 389000,
+    inventorySpendNext90dTotal: 1262000,
+    /* Unit economics */
     blendedAsp: 16.20,
     blendedCogs: 2.78,
     grossMargin: 82.8,
+    /* Path to scale */
+    breakevenTarget: 650000,
+    currentMonthlyPlantlets: 106000,
+    /* Ops detail (secondary) */
     contaminationRate: 0.6,
     activeChambers: 24,
     cultivarsInProduction: 7,
 };
+
+/* Order backlog — what's committed but not yet shipped */
+export const ORDER_BACKLOG = [
+    { id: 'B-20114', customer: 'Greenleaf Hemp', sku: 'GZ-CANN-T2', cultivar: 'Industrial Hemp', qty: 6800, value: 102000, daysToPromise: 18, status: 'In Chamber' },
+    { id: 'B-20115', customer: 'Texas Nut Cooperative', sku: 'GZ-PISTACH-T2', cultivar: 'Pistachio', qty: 4200, value: 63000, daysToPromise: 42, status: 'In Chamber' },
+    { id: 'B-20116', customer: 'Sonoma Vineyards', sku: 'GZ-VITIS3N-T1', cultivar: 'Grape (3n)', qty: 720, value: 43200, daysToPromise: 65, status: 'Sprouting' },
+    { id: 'B-20117', customer: 'Sunbelt Growers', sku: 'GZ-AGAVE-T2', cultivar: 'Agave', qty: 2400, value: 36000, daysToPromise: 14, status: 'Ready' },
+    { id: 'B-20118', customer: 'Pacific Bloom Co.', sku: 'GZ-BLUE-T1', cultivar: 'Blueberry', qty: 580, value: 34800, daysToPromise: 28, status: 'In Chamber' },
+    { id: 'B-20119', customer: 'Heritage Orchard', sku: 'GZ-PEACH-T2', cultivar: 'Peach', qty: 1100, value: 16500, daysToPromise: 21, status: 'In Chamber' },
+];
+
+/* Turn-around time per cultivar (days, order-to-ship) — current vs target */
+export const TAT_BY_CULTIVAR = [
+    { cultivar: 'Hemp', current: 78, target: 75, units: 4200 },
+    { cultivar: 'Agave', current: 96, target: 95, units: 2840 },
+    { cultivar: 'Peach', current: 112, target: 110, units: 920 },
+    { cultivar: 'Blueberry', current: 124, target: 120, units: 420 },
+    { cultivar: 'Pistachio', current: 146, target: 140, units: 1680 },
+    { cultivar: 'Orchid', current: 158, target: 160, units: 180 },
+    { cultivar: 'Grape (3n)', current: 192, target: 180, units: 360 },
+];
+
+/* Order-to-ship TAT trend — last 6 months blended */
+export const TAT_TREND = [
+    { group: 'Actual', month: 'Dec', value: 22 },
+    { group: 'Actual', month: 'Jan', value: 20 },
+    { group: 'Actual', month: 'Feb', value: 18 },
+    { group: 'Actual', month: 'Mar', value: 17 },
+    { group: 'Actual', month: 'Apr', value: 15 },
+    { group: 'Actual', month: 'May', value: 14 },
+    { group: 'Target', month: 'Dec', value: 10 },
+    { group: 'Target', month: 'Jan', value: 10 },
+    { group: 'Target', month: 'Feb', value: 10 },
+    { group: 'Target', month: 'Mar', value: 10 },
+    { group: 'Target', month: 'Apr', value: 10 },
+    { group: 'Target', month: 'May', value: 10 },
+];
+
+/* Inventory spend — actuals + 90-day projection driven by backlog */
+export const INVENTORY_SPEND_TREND = [
+    { group: 'Actual ($K)', month: 'Dec', value: 278 },
+    { group: 'Actual ($K)', month: 'Jan', value: 291 },
+    { group: 'Actual ($K)', month: 'Feb', value: 308 },
+    { group: 'Actual ($K)', month: 'Mar', value: 322 },
+    { group: 'Actual ($K)', month: 'Apr', value: 335 },
+    { group: 'Actual ($K)', month: 'May', value: 342 },
+    { group: 'Projected ($K)', month: 'May', value: 342 },
+    { group: 'Projected ($K)', month: 'Jun', value: 389 },
+    { group: 'Projected ($K)', month: 'Jul', value: 421 },
+    { group: 'Projected ($K)', month: 'Aug', value: 452 },
+];
+
+/* Inventory spend breakdown by category (current month) */
+export const INVENTORY_SPEND_BREAKDOWN = [
+    { group: 'WIP Plantlets', key: 'May', value: 232 },
+    { group: 'Tissue Culture Media', key: 'May', value: 48 },
+    { group: 'Sterile Consumables', key: 'May', value: 36 },
+    { group: 'Genetic Assay Kits', key: 'May', value: 18 },
+    { group: 'Packaging & Biora Inserts', key: 'May', value: 8 },
+];
 
 /* Margin-per-customer derived view (the "day-one win") */
 export const CUSTOMER_MARGIN = [

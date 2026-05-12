@@ -136,18 +136,31 @@ export const PhoenixEbraHome = () => {
                 </p>
             </div>
 
-            {/* KPI strip */}
+            {/* KPI strip — executive view */}
+            <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{
+                    fontSize: '0.625rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    color: 'var(--cds-text-secondary)',
+                    fontWeight: 600,
+                }}>
+                    Executive scorecard · Adam Meek
+                </div>
+            </div>
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '1rem',
-                marginBottom: '2rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '0.75rem',
+                marginBottom: '1.25rem',
             }}>
-                <Kpi label="Monthly Revenue" value={`$${(KPI_SNAPSHOT.monthlyRevenue / 1000).toFixed(0)}K`} sub="$312K ARR baseline" intent="good" />
-                <Kpi label="Blended Margin" value={`${KPI_SNAPSHOT.grossMargin}%`} sub="ASP $16.20 · COGS $2.78" intent="good" />
-                <Kpi label="Plantlets / mo" value={`${(KPI_SNAPSHOT.currentMonthlyPlantlets / 1000).toFixed(0)}K`} sub={`Breakeven at ${(KPI_SNAPSHOT.breakevenTarget / 1000).toFixed(0)}K/mo`} />
-                <Kpi label="Active Chambers" value={`${KPI_SNAPSHOT.activeChambers}`} sub={`${KPI_SNAPSHOT.cultivarsInProduction} cultivars in production`} />
-                <Kpi label="Contamination" value={`${KPI_SNAPSHOT.contaminationRate}%`} sub="vs. industry 2.4%" intent="good" />
+                <Kpi label="Order Backlog" value={`$${(KPI_SNAPSHOT.orderBacklogValue / 1000).toFixed(0)}K`} sub={`${KPI_SNAPSHOT.orderBacklogUnits.toLocaleString()} units · ${KPI_SNAPSHOT.avgDaysToPromise}d avg`} intent="good" />
+                <Kpi label="Order-to-Ship TAT" value={`${KPI_SNAPSHOT.turnaroundDays}d`} sub={`Target ${KPI_SNAPSHOT.turnaroundTarget}d · trending down`} intent="good" />
+                <Kpi label="Revenue (MTD)" value={`$${(KPI_SNAPSHOT.monthlyRevenue / 1000).toFixed(0)}K`} sub={`+${KPI_SNAPSHOT.revenueGrowthMoM}% MoM`} intent="good" />
+                <Kpi label="Inventory Spend (MTD)" value={`$${(KPI_SNAPSHOT.inventorySpendMtd / 1000).toFixed(0)}K`} sub="WIP + media + consumables" />
+                <Kpi label="Projected Spend (30d)" value={`$${(KPI_SNAPSHOT.inventorySpendNext30d / 1000).toFixed(0)}K`} sub="Driven by backlog burn" />
+                <Kpi label="Blended Margin" value={`${KPI_SNAPSHOT.grossMargin}%`} sub={`ASP $${KPI_SNAPSHOT.blendedAsp} · COGS $${KPI_SNAPSHOT.blendedCogs}`} intent="good" />
+                <Kpi label="Breakeven Progress" value={`${Math.round(KPI_SNAPSHOT.currentMonthlyPlantlets / KPI_SNAPSHOT.breakevenTarget * 100)}%`} sub={`${(KPI_SNAPSHOT.currentMonthlyPlantlets / 1000).toFixed(0)}K of ${(KPI_SNAPSHOT.breakevenTarget / 1000).toFixed(0)}K/mo`} />
             </div>
 
             {/* Two-column: Day-1 narrative & data sources */}
