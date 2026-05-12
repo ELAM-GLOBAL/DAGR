@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '@carbon/react';
-import { LANES } from '../data/workflowTemplate';
+import { LANES, LANE_DESCRIPTIONS } from '../data/workflowTemplate';
 import NodeTile from './NodeTile';
 import { WidgetNode, WidgetEdge } from '../types';
 import { getManhattanPath, Rect } from '../utils/routing';
@@ -29,33 +29,24 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
     const [nodeRects, setNodeRects] = useState<Record<string, Rect>>({});
     const canvasRef = useRef<HTMLDivElement>(null);
 
-    // Highlight state
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
     const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
 
-    // Connection Drag State
     const [isConnecting, setIsConnecting] = useState(false);
     const [connectionStartId, setConnectionStartId] = useState<string | null>(null);
     const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
 
-    // Delete confirmation modal state
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [edgeToDelete, setEdgeToDelete] = useState<WidgetEdge | null>(null);
 
     const handleNodeClick = (id: string) => {
-        if (isConnecting) {
-            // If we are connecting, clicking a node might be the end of the connection
-            // But usually mouseUp is better for drag. 
-            // Let's rely on handleConnectionEnd for the actual logic.
-            return;
-        }
+        if (isConnecting) return;
         onNodeSelect(id);
     };
 
     const handleConnectionStart = (id: string, startX: number, startY: number) => {
         if (!canvasRef.current) return;
         const canvasRect = canvasRef.current.getBoundingClientRect();
-
         setIsConnecting(true);
         setConnectionStartId(id);
         setDragPos({ x: startX - canvasRect.left, y: startY - canvasRect.top });
@@ -70,11 +61,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
     const handleMouseUp = (e: React.MouseEvent) => {
         if (!isConnecting) return;
 
-        // Use elementFromPoint to find what's under the cursor, ignoring the drag line
-        // This is more reliable than e.target when moving fast or if overlays exist
         const elementUnderCursor = document.elementFromPoint(e.clientX, e.clientY) as HTMLElement;
-
-        // Traverse up to find the node ID
         let target = elementUnderCursor;
         let targetId: string | null = null;
 
@@ -94,14 +81,11 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
         setConnectionStartId(null);
     };
 
-    // Measure nodes whenever layout changes
     useEffect(() => {
         const measureNodes = () => {
             if (!canvasRef.current) return;
-
             const canvasRect = canvasRef.current.getBoundingClientRect();
             const newRects: Record<string, Rect> = {};
-
             nodes.forEach(node => {
                 const el = document.getElementById(`node-${node.id}`);
                 if (el) {
@@ -110,54 +94,45 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                         x: rect.left - canvasRect.left,
                         y: rect.top - canvasRect.top,
                         width: rect.width,
-                        height: rect.height
+                        height: rect.height,
                     };
                 }
             });
             setNodeRects(newRects);
         };
 
-        // Helper to start observing
-        const resizeObserver = new ResizeObserver(() => {
-            measureNodes();
-        });
+        const resizeObserver = new ResizeObserver(() => { measureNodes(); });
+        if (canvasRef.current) resizeObserver.observe(canvasRef.current);
 
-        // observe the canvas itself
-        if (canvasRef.current) {
-            resizeObserver.observe(canvasRef.current);
-        }
-
-        // Also run immediately and after small delay for initial render
         measureNodes();
         const timeout = setTimeout(measureNodes, 500);
 
         return () => {
             resizeObserver.disconnect();
             clearTimeout(timeout);
-        }
+        };
     }, [nodes, scientistLaneVisible]);
 
-    // Memoized highlighting logic
     const getHighlightStatus = (currentId: string, type: 'node' | 'edge') => {
         if (!hoveredNodeId) return 'normal';
-
-        // Find all edges connected to hoveredNodeId
         const connectedEdges = edges.filter(e => e.source === hoveredNodeId || e.target === hoveredNodeId);
         const connectedEdgeIds = new Set(connectedEdges.map(e => e.id));
         const connectedNodeIds = new Set(connectedEdges.flatMap(e => [e.source, e.target]));
         connectedNodeIds.add(hoveredNodeId);
-
-        if (type === 'node') {
-            return connectedNodeIds.has(currentId) ? 'highlighted' : 'dimmed';
-        } else {
-            return connectedEdgeIds.has(currentId) ? 'highlighted' : 'dimmed';
-        }
+        if (type === 'node') return connectedNodeIds.has(currentId) ? 'highlighted' : 'dimmed';
+        return connectedEdgeIds.has(currentId) ? 'highlighted' : 'dimmed';
     };
 
-    // Group nodes by lane
-    const nodesByLane = LANES.map(laneName => {
-        return nodes.filter(n => n.lane === laneName || (laneName === 'D.A.G.R. Scientist' && n.lane === 'Scientist') || (laneName === 'D.A.G.R. BI Developer' && n.lane === 'BI') || (laneName === 'D.A.G.R. Architect' && n.lane === 'Architect') || (laneName === 'D.A.G.R. Engineer' && n.lane === 'Engineer') || (laneName === 'D.A.G.R. Analyst' && n.lane === 'Analyst'));
-    });
+    const nodesByLane = LANES.map(laneName =>
+        nodes.filter(n =>
+            n.lane === laneName ||
+            (laneName === 'D.A.G.R. Scientist' && n.lane === 'Scientist') ||
+            (laneName === 'D.A.G.R. BI Developer' && n.lane === 'BI') ||
+            (laneName === 'D.A.G.R. Architect' && n.lane === 'Architect') ||
+            (laneName === 'D.A.G.R. Engineer' && n.lane === 'Engineer') ||
+            (laneName === 'D.A.G.R. Analyst' && n.lane === 'Analyst')
+        )
+    );
 
     return (
         <div
@@ -167,7 +142,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
             onMouseUp={handleMouseUp}
             onMouseLeave={() => setIsConnecting(false)}
         >
-            {/* SVG Overlay */}
+            {/* SVG edge overlay */}
             <svg
                 style={{
                     position: 'absolute',
@@ -177,54 +152,73 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     height: '100%',
                     pointerEvents: 'none',
                     zIndex: 10,
-                    overflow: 'visible'
+                    overflow: 'visible',
                 }}
             >
                 <defs>
                     <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-                        <polygon points="0 0, 8 3, 0 6" fill="#8d8d8d" />
+                        <polygon points="0 0, 8 3, 0 6" fill="var(--cds-border-strong-01, #8d8d8d)" />
                     </marker>
                     <marker id="arrowhead-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-                        <polygon points="0 0, 8 3, 0 6" fill="#c6c6c6" />
+                        <polygon points="0 0, 8 3, 0 6" fill="var(--cds-border-subtle-01, #c6c6c6)" />
+                    </marker>
+                    <marker id="arrowhead-hover" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="var(--cds-support-error, #da1e28)" />
+                    </marker>
+                    <marker id="arrowhead-active" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                        <polygon points="0 0, 8 3, 0 6" fill="var(--cds-interactive, #0f62fe)" />
                     </marker>
                 </defs>
+
                 {edges.map(edge => {
                     const sourceRect = nodeRects[edge.source];
                     const targetRect = nodeRects[edge.target];
-
                     if (!sourceRect || !targetRect) return null;
 
                     const path = getManhattanPath(sourceRect, targetRect);
                     const isDashed = edge.type === 'dashed';
-                    const strokeColor = isDashed ? '#c6c6c6' : '#8d8d8d';
-
                     const highlightStatus = getHighlightStatus(edge.id, 'edge');
                     const isDimmed = highlightStatus === 'dimmed';
                     const isHighlighted = highlightStatus === 'highlighted';
-
                     const isHovered = hoveredEdgeId === edge.id;
 
-                    // Apply highlight styles
-                    const finalStroke = isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : strokeColor); // Red on hover for delete
-                    const finalWidth = isHovered ? 3 : (isHighlighted ? 3 : 2);
-                    const finalOpacity = isDimmed ? 0.2 : 1;
+                    const strokeColor = isHovered
+                        ? 'var(--cds-support-error, #da1e28)'
+                        : isHighlighted
+                            ? 'var(--cds-interactive, #0f62fe)'
+                            : isDashed
+                                ? 'var(--cds-border-subtle-01, #c6c6c6)'
+                                : 'var(--cds-border-strong-01, #8d8d8d)';
 
-                    const handleEdgeClick = () => {
-                        if (onEdgeDelete) {
-                            setEdgeToDelete(edge);
-                            setDeleteModalOpen(true);
-                        }
-                    };
+                    const markerEnd = isHovered
+                        ? 'url(#arrowhead-hover)'
+                        : isHighlighted
+                            ? 'url(#arrowhead-active)'
+                            : isDashed
+                                ? 'url(#arrowhead-dashed)'
+                                : 'url(#arrowhead)';
+
+                    const strokeWidth = isHovered || isHighlighted ? 3 : 2;
 
                     return (
                         <g
                             key={edge.id}
-                            style={{ opacity: finalOpacity, transition: 'opacity 0.2s', cursor: 'pointer', pointerEvents: 'auto' }}
+                            style={{
+                                opacity: isDimmed ? 0.2 : 1,
+                                transition: 'opacity 0.2s',
+                                cursor: 'pointer',
+                                pointerEvents: 'auto',
+                            }}
                             onMouseEnter={() => setHoveredEdgeId(edge.id)}
                             onMouseLeave={() => setHoveredEdgeId(null)}
-                            onClick={handleEdgeClick}
+                            onClick={() => {
+                                if (onEdgeDelete) {
+                                    setEdgeToDelete(edge);
+                                    setDeleteModalOpen(true);
+                                }
+                            }}
                         >
-                            {/* Invisible wider path for easier clicking */}
+                            {/* Invisible wider hit area */}
                             <path
                                 d={path}
                                 fill="none"
@@ -232,28 +226,42 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                 strokeWidth={16}
                                 style={{ pointerEvents: 'stroke' }}
                             />
-                            {/* Visible path */}
+                            {/* Visible edge */}
                             <path
                                 d={path}
                                 fill="none"
-                                stroke={finalStroke}
-                                strokeWidth={finalWidth}
-                                strokeDasharray={isDashed ? "4 4" : "none"}
-                                markerEnd={isDashed ? "url(#arrowhead-dashed)" : "url(#arrowhead)"}
+                                stroke={strokeColor}
+                                strokeWidth={strokeWidth}
+                                strokeDasharray={isDashed ? '4 4' : 'none'}
+                                markerEnd={markerEnd}
                                 style={{ pointerEvents: 'none', transition: 'stroke 0.15s, stroke-width 0.15s' }}
                             />
                             {edge.label && (
-                                <foreignObject x={(sourceRect.x + sourceRect.width + targetRect.x) / 2 - 30} y={(sourceRect.y + targetRect.y) / 2 - 10} width="60" height="20">
+                                <foreignObject
+                                    x={(sourceRect.x + sourceRect.width + targetRect.x) / 2 - 30}
+                                    y={(sourceRect.y + targetRect.y) / 2 - 10}
+                                    width="60"
+                                    height="20"
+                                >
                                     <div style={{
-                                        background: isHovered ? '#fff1f1' : '#f4f4f4',
+                                        background: isHovered
+                                            ? 'var(--cds-notification-error-background, #fff1f1)'
+                                            : 'var(--cds-layer-01, #f4f4f4)',
                                         padding: '0px 4px',
                                         fontSize: '10px',
                                         textAlign: 'center',
-                                        border: '1px solid #e0e0e0',
+                                        border: `1px solid ${isHovered
+                                            ? 'var(--cds-support-error, #da1e28)'
+                                            : isHighlighted
+                                                ? 'var(--cds-interactive, #0f62fe)'
+                                                : 'var(--cds-border-subtle-00, #e0e0e0)'}`,
                                         borderRadius: '8px',
-                                        color: isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : '#525252'),
+                                        color: isHovered
+                                            ? 'var(--cds-support-error, #da1e28)'
+                                            : isHighlighted
+                                                ? 'var(--cds-interactive, #0f62fe)'
+                                                : 'var(--cds-text-secondary, #525252)',
                                         fontWeight: isHighlighted || isHovered ? 'bold' : 'normal',
-                                        borderColor: isHovered ? '#da1e28' : (isHighlighted ? '#0f62fe' : '#e0e0e0')
                                     }}>
                                         {edge.label}
                                     </div>
@@ -263,25 +271,33 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                     );
                 })}
 
-                {/* Temporary Connection Line */}
+                {/* Temporary connection drag line */}
                 {isConnecting && connectionStartId && nodeRects[connectionStartId] && (
                     <line
                         x1={nodeRects[connectionStartId].x + nodeRects[connectionStartId].width}
                         y1={nodeRects[connectionStartId].y + nodeRects[connectionStartId].height / 2}
                         x2={dragPos.x}
                         y2={dragPos.y}
-                        stroke="#0f62fe"
+                        stroke="var(--cds-interactive, #0f62fe)"
                         strokeWidth="2"
                         strokeDasharray="4 4"
-                        markerEnd="url(#arrowhead)"
+                        markerEnd="url(#arrowhead-active)"
                         style={{ pointerEvents: 'none' }}
                     />
                 )}
             </svg>
 
+            {/* Lane columns */}
             <div
                 ref={canvasRef}
-                style={{ display: 'flex', minHeight: '100%', padding: '2rem', gap: '2rem', position: 'relative', zIndex: 2 }}
+                style={{
+                    display: 'flex',
+                    minHeight: '100%',
+                    padding: '2rem',
+                    gap: '2rem',
+                    position: 'relative',
+                    zIndex: 2,
+                }}
             >
                 {LANES.map((lane, index) => {
                     if (lane === 'D.A.G.R. Scientist' && !scientistLaneVisible) return null;
@@ -301,7 +317,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                         const template = JSON.parse(data);
                                         onNodeDrop(template, lane, index);
                                     } catch (err) {
-                                        console.error("Failed to parse dropped item", err);
+                                        console.error('Failed to parse dropped item', err);
                                     }
                                 }
                             }}
@@ -311,29 +327,53 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                 paddingRight: '1.5rem',
                                 display: 'flex',
                                 flexDirection: 'column',
-                                position: 'relative'
+                                position: 'relative',
                             }}
                         >
                             {/* Vertical lane divider */}
                             {index < LANES.length - 1 && (
-                                <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '1px', borderRight: '1px dashed #e0e0e0' }} />
+                                <div style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: 0,
+                                    bottom: 0,
+                                    width: '1px',
+                                    borderRight: '1px dashed var(--cds-border-subtle-00, #e0e0e0)',
+                                }} />
                             )}
 
                             {/* Lane header */}
-                            <h5 style={{
-                                marginBottom: '1.5rem',
-                                color: '#525252',
-                                textTransform: 'uppercase',
-                                fontSize: '11px',
-                                letterSpacing: '0.5px',
-                                textAlign: 'center',
-                                fontWeight: 600
-                            }}>
-                                {lane}
-                            </h5>
+                            <div style={{ marginBottom: '1.25rem', textAlign: 'center' }}>
+                                <h5 style={{
+                                    color: 'var(--cds-text-secondary, #525252)',
+                                    textTransform: 'uppercase',
+                                    fontSize: '11px',
+                                    letterSpacing: '0.5px',
+                                    fontWeight: 600,
+                                    margin: 0,
+                                }}>
+                                    {lane}
+                                </h5>
+                                {LANE_DESCRIPTIONS[lane] && (
+                                    <div style={{
+                                        fontSize: '10px',
+                                        color: 'var(--cds-text-helper, #6f6f6f)',
+                                        marginTop: '0.25rem',
+                                        lineHeight: 1.35,
+                                        padding: '0 0.25rem',
+                                    }}>
+                                        {LANE_DESCRIPTIONS[lane]}
+                                    </div>
+                                )}
+                            </div>
 
-                            {/* Nodes stacked vertically */}
-                            <div className="lane-content" style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                            {/* Nodes */}
+                            <div style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '1rem',
+                                alignItems: 'center',
+                            }}>
                                 {nodesByLane[index].map(node => {
                                     const highlightStatus = getHighlightStatus(node.id, 'node');
                                     const isDimmed = highlightStatus === 'dimmed';
@@ -353,7 +393,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                                                 onConnectionStart={handleConnectionStart}
                                             />
                                         </div>
-                                    )
+                                    );
                                 })}
                             </div>
                         </div>
@@ -361,7 +401,7 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
                 })}
             </div>
 
-            {/* Delete Confirmation Modal */}
+            {/* Edge delete confirmation modal */}
             <Modal
                 open={deleteModalOpen}
                 modalHeading="Delete Connection"
@@ -382,7 +422,11 @@ const SwimlaneCanvas: React.FC<SwimlaneCanvasProps> = ({
             >
                 <p>Are you sure you want to delete this connection?</p>
                 {edgeToDelete && (
-                    <p style={{ marginTop: '0.5rem', color: '#525252', fontSize: '0.875rem' }}>
+                    <p style={{
+                        marginTop: '0.5rem',
+                        color: 'var(--cds-text-secondary, #525252)',
+                        fontSize: '0.875rem',
+                    }}>
                         From <strong>{edgeToDelete.source}</strong> to <strong>{edgeToDelete.target}</strong>
                     </p>
                 )}

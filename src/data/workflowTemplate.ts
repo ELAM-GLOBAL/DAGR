@@ -1,89 +1,94 @@
 import { WorkflowData } from '../types';
 
+/**
+ * Phoenix Ebra five-agent workflow. Day-1 work uses orders + shipping;
+ * Day-N expansion adds chamber telemetry, LIMS, and compliance.
+ */
 export const INITIAL_WORKFLOW: WorkflowData = {
     nodes: [
-        // Lane 1: Architect
-        { id: 'portfolio-holdings', title: 'Portfolio / Holdings', lane: 'Architect', laneIndex: 0, status: 'Configured' },
-        { id: 'market-prices', title: 'Market Prices', lane: 'Architect', laneIndex: 0, status: 'Configured' },
-        { id: 'fx-rates', title: 'FX Rates', lane: 'Architect', laneIndex: 0, status: 'Configured' },
-        { id: 'macro-data', title: 'Macro Data', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup', description: 'Macro economic data feeds' },
-        { id: 'benchmark', title: 'Benchmark', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup' },
-        { id: 'calendar-currency', title: 'Calendar & Currency', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup' },
+        // Architect (INGEST) — secure data sync from source systems
+        { id: 'orderflow-feed', title: 'OrderFlow Feed', lane: 'Architect', laneIndex: 0, status: 'Configured', description: "Kevin's platform — orders, line items, ASP" },
+        { id: 'shiptrack-feed', title: 'ShipTrack Feed', lane: 'Architect', laneIndex: 0, status: 'Configured', description: "Scott's platform — shipments, lanes, carriers" },
+        { id: 'lims-stream', title: 'LIMS Stream', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup', description: 'Genetic assays, sterility events' },
+        { id: 'chamber-telemetry', title: 'Chamber Telemetry', lane: 'Architect', laneIndex: 0, status: 'NeedsSetup', description: 'Biora chambers — temp, humidity, CO₂, PAR' },
+        { id: 'mes-events', title: 'Robotics MES', lane: 'Architect', laneIndex: 0, status: 'Optional', isOptional: true, description: 'Bot cycle time, abort events' },
+        { id: 'usda-feed', title: 'USDA APHIS', lane: 'Architect', laneIndex: 0, status: 'Optional', isOptional: true, description: 'Phytosanitary registry pulls' },
 
-        // Lane 2: Engineer
-        { id: 'schema-profiler', title: 'Schema Profiler', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
-        { id: 'validate', title: 'Validate (Schema + DQ)', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
-        { id: 'dq-issue-queue', title: 'DQ Issue Queue', lane: 'Engineer', laneIndex: 1, status: 'Optional', isOptional: true },
-        { id: 'normalize-align', title: 'Normalize & Align', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
-        { id: 'join-fx-convert', title: 'Join & FX Convert', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
-        { id: 'build-return-inputs', title: 'Build Return Inputs', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
+        // Engineer (DESIGN) — clean & prepare the conformed mart
+        { id: 'conform-orders', title: 'Conform Orders', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup', description: 'Normalize order IDs, customer IDs, SKUs' },
+        { id: 'conform-shipments', title: 'Conform Shipments', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup', description: 'Normalize lanes, carriers, cost breakdown' },
+        { id: 'dq-gate', title: 'DQ Gate', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup', description: 'Schema + completeness checks' },
+        { id: 'join-order-ship', title: 'Join Order ↔ Ship', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup', description: 'The day-1 join: per-order fulfillment cost' },
+        { id: 'lineage-builder', title: 'Lineage Builder', lane: 'Engineer', laneIndex: 1, status: 'Optional', isOptional: true, description: 'Donor lot → plantlet provenance graph' },
+        { id: 'mart-publish', title: 'Publish Conformed Mart', lane: 'Engineer', laneIndex: 1, status: 'NeedsSetup' },
 
-        // Lane 3: Analyst (4-Domain Analytics)
-        { id: 'analytics-config', title: 'Analytics Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Configure metrics, benchmarks, risk parameters' },
-        { id: 'benchmark-config', title: 'Benchmark Config', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
-        { id: 'compute-performance', title: 'Performance Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'TWRR, IRR, CAGR, Active Return' },
-        { id: 'compute-risk', title: 'Risk Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'VaR, ES, Vol, TE, Drawdown' },
-        { id: 'compute-attribution', title: 'Attribution Analytics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Brinson, Sector Contrib' },
-        { id: 'stress-testing', title: 'Stress Testing', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true, description: 'Historical & custom scenarios' },
-        { id: 'risk-adjusted-metrics', title: 'Risk-Adjusted Metrics', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'Sharpe, Sortino, Treynor, IR, Alpha' },
-        { id: 'output-qa-checks', title: 'Output QA Checks', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
+        // Analyst (ANALYZE) — generate insights from the mart
+        { id: 'margin-engine', title: 'Margin Engine', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'True margin per order, customer, SKU, lane' },
+        { id: 'lane-pl', title: 'Carrier & Lane P&L', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup' },
+        { id: 'customer-ltv', title: 'Customer LTV', lane: 'Analyst', laneIndex: 2, status: 'NeedsSetup', description: 'LTV after fulfillment + service costs' },
+        { id: 'cultivar-pl', title: 'Cultivar P&L', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true, description: 'Per-cultivar cost-to-serve' },
+        { id: 'contamination-watch', title: 'Contamination Watch', lane: 'Analyst', laneIndex: 2, status: 'Optional', isOptional: true, description: 'Rate per chamber, shift, cultivar' },
 
-        // Lane 4: Scientist
-        { id: 'model-step', title: 'Model Step', lane: 'Scientist', laneIndex: 3, status: 'Optional', isOptional: true },
+        // Scientist (PREDICT) — build scenarios + forecasts
+        { id: 'demand-forecast', title: 'Demand Forecast', lane: 'Scientist', laneIndex: 3, status: 'NeedsSetup', description: 'Order velocity → propagation lead-time alignment' },
+        { id: 'contamination-risk', title: 'Contamination Risk', lane: 'Scientist', laneIndex: 3, status: 'Optional', isOptional: true, description: 'Predictive risk per chamber-shift' },
+        { id: 'yield-forecast', title: 'Yield Forecast', lane: 'Scientist', laneIndex: 3, status: 'Optional', isOptional: true, description: 'Days-to-harvest, expected scrap' },
+        { id: 'capex-sim', title: 'Capex Simulator', lane: 'Scientist', laneIndex: 3, status: 'Optional', isOptional: true, description: 'When adding chamber N pulls breakeven earlier' },
 
-        // Lane 5: BI Developer
-        { id: 'dashboard-cards', title: 'Dashboard Cards', lane: 'BI', laneIndex: 4, status: 'NeedsSetup' },
-        { id: 'report-generator', title: 'Report Generator', lane: 'BI', laneIndex: 4, status: 'NeedsSetup' },
-        { id: 'exports-api', title: 'Exports / API', lane: 'BI', laneIndex: 4, status: 'NeedsSetup' },
+        // BI Developer (VISUALIZE) — publish dashboards & exports
+        { id: 'exec-scorecard', title: 'Exec Scorecard', lane: 'BI', laneIndex: 4, status: 'NeedsSetup', description: 'CEO/COO weekly view' },
+        { id: 'shift-console', title: 'Shift Console', lane: 'BI', laneIndex: 4, status: 'Optional', isOptional: true, description: 'Live chamber & work queue view' },
+        { id: 'compliance-pack', title: 'Compliance Pack', lane: 'BI', laneIndex: 4, status: 'Optional', isOptional: true, description: 'USDA APHIS audit-ready export' },
+        { id: 'grower-portal', title: 'Grower Portal', lane: 'BI', laneIndex: 4, status: 'Optional', isOptional: true, description: 'Buy-In program outcome submission' },
     ],
     edges: [
-        // Standard flow (simplified for v1 - detailed connection map in components)
-        // Architect -> Engineer
-        { id: 'e1', source: 'portfolio-holdings', target: 'schema-profiler', type: 'solid' },
-        { id: 'e2', source: 'market-prices', target: 'schema-profiler', type: 'solid' },
-        { id: 'e3', source: 'fx-rates', target: 'schema-profiler', type: 'solid' },
-        { id: 'e4', source: 'calendar-currency', target: 'join-fx-convert', type: 'solid' },
+        // Architect → Engineer
+        { id: 'e1', source: 'orderflow-feed', target: 'conform-orders', type: 'solid' },
+        { id: 'e2', source: 'shiptrack-feed', target: 'conform-shipments', type: 'solid' },
+        { id: 'e3', source: 'lims-stream', target: 'lineage-builder', type: 'dashed' },
+        { id: 'e4', source: 'chamber-telemetry', target: 'lineage-builder', type: 'dashed' },
+        { id: 'e5', source: 'mes-events', target: 'lineage-builder', type: 'dashed' },
+        { id: 'e6', source: 'usda-feed', target: 'lineage-builder', type: 'dashed' },
 
-        // Engineer Flow
-        { id: 'e5', source: 'schema-profiler', target: 'validate', type: 'solid' },
-        { id: 'e6', source: 'validate', target: 'normalize-align', type: 'solid' },
-        { id: 'e7', source: 'validate', target: 'dq-issue-queue', type: 'dashed', label: 'Issues' },
-        { id: 'e8', source: 'dq-issue-queue', target: 'validate', type: 'dashed', label: 'Retry' },
-        { id: 'e9', source: 'normalize-align', target: 'join-fx-convert', type: 'solid' },
-        { id: 'e10', source: 'join-fx-convert', target: 'build-return-inputs', type: 'solid' },
+        // Engineer flow
+        { id: 'e7', source: 'conform-orders', target: 'dq-gate', type: 'solid' },
+        { id: 'e8', source: 'conform-shipments', target: 'dq-gate', type: 'solid' },
+        { id: 'e9', source: 'dq-gate', target: 'join-order-ship', type: 'solid' },
+        { id: 'e10', source: 'join-order-ship', target: 'mart-publish', type: 'solid' },
+        { id: 'e11', source: 'lineage-builder', target: 'mart-publish', type: 'dashed' },
 
-        // Engineer -> Analyst (4-Domain Analytics)
-        { id: 'e11', source: 'build-return-inputs', target: 'compute-performance', type: 'solid' },
-        { id: 'e11b', source: 'build-return-inputs', target: 'compute-risk', type: 'solid' },
+        // Engineer → Analyst
+        { id: 'e12', source: 'mart-publish', target: 'margin-engine', type: 'solid' },
+        { id: 'e13', source: 'mart-publish', target: 'lane-pl', type: 'solid' },
+        { id: 'e14', source: 'mart-publish', target: 'customer-ltv', type: 'solid' },
+        { id: 'e15', source: 'mart-publish', target: 'cultivar-pl', type: 'dashed' },
+        { id: 'e16', source: 'mart-publish', target: 'contamination-watch', type: 'dashed' },
 
-        // Analyst Flow (4 Domains)
-        { id: 'e12', source: 'analytics-config', target: 'compute-performance', type: 'solid' },
-        { id: 'e12b', source: 'analytics-config', target: 'compute-risk', type: 'solid' },
-        { id: 'e12c', source: 'analytics-config', target: 'compute-attribution', type: 'solid' },
-        { id: 'e13', source: 'compute-performance', target: 'compute-attribution', type: 'solid' },
-        { id: 'e13b', source: 'compute-risk', target: 'risk-adjusted-metrics', type: 'solid' },
-        { id: 'e13c', source: 'compute-performance', target: 'risk-adjusted-metrics', type: 'solid' },
-        { id: 'e13d', source: 'risk-adjusted-metrics', target: 'output-qa-checks', type: 'solid' },
-        { id: 'e13e', source: 'compute-attribution', target: 'output-qa-checks', type: 'solid' },
+        // Analyst → Scientist
+        { id: 'e17', source: 'margin-engine', target: 'demand-forecast', type: 'solid' },
+        { id: 'e18', source: 'contamination-watch', target: 'contamination-risk', type: 'dashed' },
+        { id: 'e19', source: 'cultivar-pl', target: 'yield-forecast', type: 'dashed' },
+        { id: 'e20', source: 'cultivar-pl', target: 'capex-sim', type: 'dashed' },
 
-        // Benchmark Flow (Optional)
-        { id: 'e14', source: 'benchmark', target: 'benchmark-config', type: 'dashed' },
-        { id: 'e15', source: 'benchmark-config', target: 'compute-performance', type: 'dashed' },
-        { id: 'e15b', source: 'benchmark-config', target: 'compute-attribution', type: 'dashed' },
-
-        // Stress Testing Flow (Optional)
-        { id: 'e16', source: 'compute-risk', target: 'stress-testing', type: 'dashed' },
-        { id: 'e17', source: 'stress-testing', target: 'output-qa-checks', type: 'dashed' },
-
-        // Scientist Flow (Optional)
-        { id: 'e18', source: 'build-return-inputs', target: 'model-step', type: 'dashed' },
-        { id: 'e19', source: 'model-step', target: 'compute-risk', type: 'dashed' },
-
-        // Output Flow
-        { id: 'e20', source: 'output-qa-checks', target: 'dashboard-cards', type: 'solid' },
-        { id: 'e21', source: 'output-qa-checks', target: 'report-generator', type: 'solid' },
-        { id: 'e22', source: 'output-qa-checks', target: 'exports-api', type: 'solid' },
-    ]
+        // Analyst/Scientist → BI
+        { id: 'e21', source: 'margin-engine', target: 'exec-scorecard', type: 'solid' },
+        { id: 'e22', source: 'lane-pl', target: 'exec-scorecard', type: 'solid' },
+        { id: 'e23', source: 'customer-ltv', target: 'exec-scorecard', type: 'solid' },
+        { id: 'e24', source: 'demand-forecast', target: 'exec-scorecard', type: 'solid' },
+        { id: 'e25', source: 'contamination-watch', target: 'shift-console', type: 'dashed' },
+        { id: 'e26', source: 'contamination-risk', target: 'shift-console', type: 'dashed' },
+        { id: 'e27', source: 'contamination-watch', target: 'compliance-pack', type: 'dashed' },
+        { id: 'e28', source: 'customer-ltv', target: 'grower-portal', type: 'dashed' },
+    ],
 };
 
 export const LANES = ['D.A.G.R. Architect', 'D.A.G.R. Engineer', 'D.A.G.R. Analyst', 'D.A.G.R. Scientist', 'D.A.G.R. BI Developer'];
+
+/** Sub-titles describing each agent's role in the Phoenix Ebra context. */
+export const LANE_DESCRIPTIONS: Record<string, string> = {
+    'D.A.G.R. Architect': 'INGEST · Connect OrderFlow, ShipTrack, LIMS, ChamberOS',
+    'D.A.G.R. Engineer': 'DESIGN · Conform & join into one mart',
+    'D.A.G.R. Analyst': 'ANALYZE · Margin, lane P&L, LTV, cultivar P&L',
+    'D.A.G.R. Scientist': 'PREDICT · Demand, contamination, yield, capex',
+    'D.A.G.R. BI Developer': 'VISUALIZE · Scorecards, consoles, exports',
+};

@@ -4,9 +4,7 @@ import {
     TextInput,
     Select,
     SelectItem,
-    TextArea,
     Toggle,
-
     Button,
     RadioButtonGroup,
     RadioButton,
@@ -14,7 +12,8 @@ import {
     NumberInput,
     FileUploader,
     DatePicker,
-    DatePickerInput
+    DatePickerInput,
+    Tag,
 } from '@carbon/react';
 import { WidgetNode } from '../types';
 
@@ -26,7 +25,6 @@ interface WidgetConfigModalProps {
     onClose: () => void;
 }
 
-// Widget-specific configuration definitions based on PRD
 const WIDGET_CONFIGS: Record<string, {
     fields: Array<{
         id: string;
@@ -55,8 +53,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'portfolio_id', 'asset_id', 'quantity', 'book_value', 'market_value', 'currency'],
-            description: 'Portfolio position data including holdings, quantities, and book values'
-        }
+            description: 'Portfolio position data including holdings, quantities, and book values',
+        },
     },
     'market-prices': {
         fields: [
@@ -69,8 +67,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'asset_id', 'price', 'currency', 'adjust_factor'],
-            description: 'Daily closing prices for all portfolio securities'
-        }
+            description: 'Daily closing prices for all portfolio securities',
+        },
     },
     'fx-rates': {
         fields: [
@@ -82,8 +80,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'base_ccy', 'quote_ccy', 'rate'],
-            description: 'Daily FX rates for currency conversion'
-        }
+            description: 'Daily FX rates for currency conversion',
+        },
     },
     'macro-data': {
         fields: [
@@ -93,8 +91,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'indicator', 'value'],
-            description: 'Macro economic data feeds'
-        }
+            description: 'Macro economic data feeds',
+        },
     },
     'benchmark': {
         fields: [
@@ -105,15 +103,15 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'benchmark_id', 'return', 'level', 'currency'],
-            description: 'Benchmark index returns for relative performance'
-        }
+            description: 'Benchmark index returns for relative performance',
+        },
     },
     'calendar-currency': {
         fields: [
             { id: 'baseCurrency', label: 'Base Currency', type: 'select', options: ['USD', 'EUR', 'GBP', 'CAD', 'JPY', 'CHF'], defaultValue: 'USD' },
             { id: 'holidayCalendar', label: 'Holiday Calendar', type: 'select', options: ['US NYSE', 'UK LSE', 'Combined', 'Custom'], defaultValue: 'US NYSE' },
             { id: 'tradingDays', label: 'Trading Days/Year', type: 'number', defaultValue: 252 },
-        ]
+        ],
     },
     'schema-profiler': {
         fields: [
@@ -122,8 +120,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['column_name', 'inferred_type', 'null_count', 'unique_count', 'sample_values'],
-            description: 'Analyzes incoming data schemas, detects types, and computes statistics'
-        }
+            description: 'Analyzes incoming data schemas, detects types, and computes statistics',
+        },
     },
     'validate': {
         fields: [
@@ -134,8 +132,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['validation_rule', 'severity', 'status', 'affected_rows'],
-            description: 'Validates data against schema rules and data quality checks'
-        }
+            description: 'Validates data against schema rules and data quality checks',
+        },
     },
     'dq-issue-queue': {
         fields: [
@@ -143,8 +141,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['issue_id', 'type', 'severity', 'affected_rows', 'resolution'],
-            description: 'Captures and manages data quality issues for manual review/fix'
-        }
+            description: 'Captures and manages data quality issues for manual review/fix',
+        },
     },
     'normalize-align': {
         fields: [
@@ -154,8 +152,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'asset_id', 'normalized_id', 'adjusted_values'],
-            description: 'Standardizes identifiers, aligns to trading calendar, handles corporate actions'
-        }
+            description: 'Standardizes identifiers, aligns to trading calendar, handles corporate actions',
+        },
     },
     'join-fx-convert': {
         fields: [
@@ -164,8 +162,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'portfolio_id', 'asset_id', 'mv_local', 'fx_rate', 'mv_base'],
-            description: 'Joins holdings with prices and converts all values to base currency'
-        }
+            description: 'Joins holdings with prices and converts all values to base currency',
+        },
     },
     'build-return-inputs': {
         fields: [
@@ -173,8 +171,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['date', 'portfolio_id', 'mv_begin', 'mv_end', 'net_cf', 'weight'],
-            description: 'Computes daily portfolio valuations and cash flows for return calculation'
-        }
+            description: 'Computes daily portfolio valuations and cash flows for return calculation',
+        },
     },
     'analytics-config': {
         fields: [
@@ -188,8 +186,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['config_key', 'config_value'],
-            description: 'Central configuration for all analytics calculations including returns, risk, and metrics'
-        }
+            description: 'Central configuration for all analytics calculations including returns, risk, and metrics',
+        },
     },
     'benchmark-config': {
         fields: [
@@ -198,8 +196,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['benchmark_id', 'weight', 'return_series'],
-            description: 'Configure benchmark for relative return, alpha, and attribution analysis'
-        }
+            description: 'Configure benchmark for relative return, alpha, and attribution analysis',
+        },
     },
     'compute-performance': {
         fields: [
@@ -209,8 +207,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['metric', 'MTD', 'QTD', 'YTD', '1Y', '3Y_Ann', '5Y_Ann'],
-            description: 'Calculate portfolio return metrics: TWRR, IRR, XIRR, CAGR, Active Return'
-        }
+            description: 'Calculate portfolio return metrics: TWRR, IRR, XIRR, CAGR, Active Return',
+        },
     },
     'compute-risk': {
         fields: [
@@ -219,8 +217,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['metric', 'value', 'confidence', 'lookback_period'],
-            description: 'Calculate risk metrics: VaR, Expected Shortfall, Volatility, Tracking Error, Drawdown'
-        }
+            description: 'Calculate risk metrics: VaR, Expected Shortfall, Volatility, Tracking Error, Drawdown',
+        },
     },
     'compute-attribution': {
         fields: [
@@ -230,8 +228,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['group', 'allocation_effect', 'selection_effect', 'interaction_effect', 'total_effect'],
-            description: 'Brinson attribution decomposing active return into allocation and selection effects'
-        }
+            description: 'Brinson attribution decomposing active return into allocation and selection effects',
+        },
     },
     'stress-testing': {
         fields: [
@@ -240,8 +238,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['scenario', 'portfolio_impact', 'var_impact', 'worst_sector'],
-            description: 'Run historical and custom stress scenarios on portfolio'
-        }
+            description: 'Run historical and custom stress scenarios on portfolio',
+        },
     },
     'risk-adjusted-metrics': {
         fields: [
@@ -250,8 +248,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['metric', 'value', 'benchmark', 'period'],
-            description: 'Calculate Sharpe, Sortino, Treynor, Information Ratio, and Alpha'
-        }
+            description: 'Calculate Sharpe, Sortino, Treynor, Information Ratio, and Alpha',
+        },
     },
     'output-qa-checks': {
         fields: [
@@ -260,8 +258,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['check_name', 'status', 'expected', 'actual', 'variance'],
-            description: 'Validate calculation outputs against tolerance thresholds'
-        }
+            description: 'Validate calculation outputs against tolerance thresholds',
+        },
     },
     'model-step': {
         fields: [
@@ -269,8 +267,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['model_output', 'prediction', 'confidence'],
-            description: 'Optional custom ML/statistical models for enhanced analytics'
-        }
+            description: 'Optional custom ML/statistical models for enhanced analytics',
+        },
     },
     'dashboard-cards': {
         fields: [
@@ -280,8 +278,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['card_id', 'metric', 'value', 'trend'],
-            description: 'Dashboard widget cards for portfolio risk KPIS'
-        }
+            description: 'Dashboard widget cards for portfolio risk KPIs',
+        },
     },
     'report-generator': {
         fields: [
@@ -291,8 +289,8 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['section', 'content', 'charts'],
-            description: 'Generate formatted portfolio risk reports'
-        }
+            description: 'Generate formatted portfolio risk reports',
+        },
     },
     'exports-api': {
         fields: [
@@ -302,10 +300,18 @@ const WIDGET_CONFIGS: Record<string, {
         ],
         schemaInfo: {
             columns: ['endpoint', 'method', 'parameters'],
-            description: 'API endpoints and data export capabilities'
-        }
+            description: 'API endpoints and data export capabilities',
+        },
     },
 };
+
+const LANES = [
+    'D.A.G.R. Architect',
+    'D.A.G.R. Engineer',
+    'D.A.G.R. Analyst',
+    'D.A.G.R. BI Developer',
+    'D.A.G.R. Scientist',
+];
 
 const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpdate, onDelete, onClose }) => {
     const [formData, setFormData] = useState<Record<string, any>>({});
@@ -313,18 +319,7 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
     const [nodeStatus, setNodeStatus] = useState(node.status);
     const [nodeLane, setNodeLane] = useState(node.lane);
 
-    const LANES = [
-        'D.A.G.R. Architect',
-        'D.A.G.R. Engineer',
-        'D.A.G.R. Analyst',
-        'D.A.G.R. BI Developer',
-        'D.A.G.R. Scientist'
-    ];
-
-    // Get widget-specific config
     const widgetConfig = WIDGET_CONFIGS[node.id] || { fields: [] };
-
-
 
     useEffect(() => {
         setFormData({ ...node.config });
@@ -343,7 +338,7 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
             title: nodeTitle,
             status: 'Configured',
             lane: nodeLane,
-            config: formData
+            config: formData,
         } as WidgetNode);
         onClose();
     };
@@ -369,7 +364,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         helperText={field.helperText}
                     />
                 );
-
             case 'select':
                 return (
                     <Select
@@ -383,7 +377,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         ))}
                     </Select>
                 );
-
             case 'radio':
                 return (
                     <RadioButtonGroup
@@ -398,7 +391,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         ))}
                     </RadioButtonGroup>
                 );
-
             case 'toggle':
                 return (
                     <Toggle
@@ -410,7 +402,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         onToggle={(checked) => handleFieldChange(field.id, checked)}
                     />
                 );
-
             case 'number':
                 return (
                     <NumberInput
@@ -422,7 +413,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         max={365}
                     />
                 );
-
             case 'slider':
                 return (
                     <Slider
@@ -435,7 +425,6 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         onChange={({ value: v }) => handleFieldChange(field.id, v)}
                     />
                 );
-
             case 'file':
                 return (
                     <FileUploader
@@ -452,21 +441,16 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         name={field.id}
                         onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) {
-                                handleFieldChange(field.id, file.name);
-                            }
+                            if (file) handleFieldChange(field.id, file.name);
                         }}
                     />
                 );
-
             case 'date':
                 return (
                     <DatePicker
                         datePickerType="single"
                         onChange={(dates) => {
-                            if (dates[0]) {
-                                handleFieldChange(field.id, dates[0].toISOString().split('T')[0]);
-                            }
+                            if (dates[0]) handleFieldChange(field.id, dates[0].toISOString().split('T')[0]);
                         }}
                     >
                         <DatePickerInput
@@ -477,11 +461,17 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                         />
                     </DatePicker>
                 );
-
             default:
                 return null;
         }
     };
+
+    const primaryFields = widgetConfig.fields.filter(
+        f => !f.section || f.section === 'source' || f.section === 'config'
+    );
+    const advancedFields = widgetConfig.fields.filter(
+        f => f.section && f.section !== 'source' && f.section !== 'config'
+    );
 
     return (
         <Modal
@@ -494,66 +484,95 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
             onRequestSubmit={handleSave}
             size="lg"
         >
-            <div className="modal-content-container" style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '1rem 0' }}>
+            <div style={{ minHeight: '400px', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '1rem 0' }}>
 
-                {/* Schema Info Panel */}
+                {/* Schema info panel */}
                 {widgetConfig.schemaInfo && (
                     <div style={{
                         padding: '1rem',
-                        backgroundColor: '#f4f4f4',
-                        borderLeft: '4px solid #0f62fe',
-                        borderRadius: '0 4px 4px 0'
+                        backgroundColor: 'var(--cds-layer-01, #f4f4f4)',
+                        borderLeft: '4px solid var(--cds-interactive, #0f62fe)',
                     }}>
-                        <p style={{ fontSize: '14px', color: '#161616', marginBottom: '0.5rem', fontWeight: 600 }}>
+                        <p style={{
+                            fontSize: '14px',
+                            color: 'var(--cds-text-primary, #161616)',
+                            marginBottom: '0.5rem',
+                            fontWeight: 600,
+                        }}>
                             {widgetConfig.schemaInfo.description}
                         </p>
-                        <div>
-                            <span style={{ fontSize: '12px', color: '#525252', fontWeight: 600 }}>Required Columns: </span>
-                            <code style={{
-                                backgroundColor: '#e0e0e0',
-                                padding: '2px 6px',
-                                borderRadius: '3px',
-                                fontSize: '11px',
-                                fontFamily: '"IBM Plex Mono", monospace'
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                            <span style={{
+                                fontSize: '12px',
+                                color: 'var(--cds-text-secondary, #525252)',
+                                fontWeight: 600,
                             }}>
-                                {widgetConfig.schemaInfo.columns.join(', ')}
-                            </code>
+                                Required Columns:
+                            </span>
+                            {widgetConfig.schemaInfo.columns.map(col => (
+                                <Tag key={col} type="cool-gray" size="sm">{col}</Tag>
+                            ))}
                         </div>
                     </div>
                 )}
 
-                {/* Configuration Fields */}
+                {/* Configuration fields */}
                 {widgetConfig.fields.length > 0 ? (
                     <>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                            <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#525252', borderBottom: '1px solid #e0e0e0', paddingBottom: '0.5rem' }}>Configuration</h4>
-                            {widgetConfig.fields.filter(f => !f.section || f.section === 'source' || f.section === 'config').map(field => (
-                                <div key={field.id}>
-                                    {renderField(field)}
-                                </div>
+                            <h4 style={{
+                                fontSize: '14px',
+                                fontWeight: 600,
+                                color: 'var(--cds-text-secondary, #525252)',
+                                borderBottom: '1px solid var(--cds-border-subtle-00, #e0e0e0)',
+                                paddingBottom: '0.5rem',
+                            }}>
+                                Configuration
+                            </h4>
+                            {primaryFields.map(field => (
+                                <div key={field.id}>{renderField(field)}</div>
                             ))}
                         </div>
 
-                        {widgetConfig.fields.filter(f => f.section && f.section !== 'source' && f.section !== 'config').length > 0 && (
+                        {advancedFields.length > 0 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '1rem' }}>
-                                <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#525252', borderBottom: '1px solid #e0e0e0', paddingBottom: '0.5rem' }}>Advanced Settings</h4>
-                                {widgetConfig.fields.filter(f => f.section && f.section !== 'source' && f.section !== 'config').map(field => (
-                                    <div key={field.id}>
-                                        {renderField(field)}
-                                    </div>
+                                <h4 style={{
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: 'var(--cds-text-secondary, #525252)',
+                                    borderBottom: '1px solid var(--cds-border-subtle-00, #e0e0e0)',
+                                    paddingBottom: '0.5rem',
+                                }}>
+                                    Advanced Settings
+                                </h4>
+                                {advancedFields.map(field => (
+                                    <div key={field.id}>{renderField(field)}</div>
                                 ))}
                             </div>
                         )}
                     </>
                 ) : (
-                    <p style={{ color: '#6f6f6f', fontStyle: 'italic' }}>
+                    <p style={{ color: 'var(--cds-text-helper, #6f6f6f)', fontStyle: 'italic' }}>
                         No specific configuration options available for this widget.
                     </p>
                 )}
 
-                {/* Basic Node Settings */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginTop: '2rem', paddingTop: '2rem', borderTop: '1px dashed #e0e0e0' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: 600, color: '#525252' }}>Node Settings</h4>
+                {/* Node settings */}
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1.5rem',
+                    marginTop: '2rem',
+                    paddingTop: '2rem',
+                    borderTop: '1px dashed var(--cds-border-subtle-00, #e0e0e0)',
+                }}>
+                    <h4 style={{
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: 'var(--cds-text-secondary, #525252)',
+                    }}>
+                        Node Settings
+                    </h4>
                     <TextInput
                         id="node-title"
                         labelText="Node Title"
@@ -588,12 +607,8 @@ const WidgetConfigModal: React.FC<WidgetConfigModalProps> = ({ node, open, onUpd
                     </div>
                 </div>
 
-                <div style={{ marginTop: 'auto', paddingTop: '2rem', display: 'flex', justifyContent: 'flex-start' }}>
-                    <Button
-                        kind="danger--ghost"
-                        onClick={handleDelete}
-                        size="md"
-                    >
+                <div style={{ marginTop: 'auto', paddingTop: '2rem' }}>
+                    <Button kind="danger--ghost" onClick={handleDelete} size="md">
                         Delete Node
                     </Button>
                 </div>
