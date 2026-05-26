@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tabs, TabList, Tab, TabPanels, TabPanel, TextInput, Select, SelectItem, Toggle, Tag, CodeSnippet } from '@carbon/react';
-import { Close, Checkmark, Warning } from '@carbon/icons-react';
+import { Button, Tabs, TabList, Tab, TabPanels, TabPanel, TextInput, Select, SelectItem, Toggle, Tag } from '@carbon/react';
+import { Close, Warning } from '@carbon/icons-react';
 import { WidgetNode } from '../types';
 
 interface WidgetSidePanelProps {
@@ -12,7 +12,7 @@ interface WidgetSidePanelProps {
 const WidgetSidePanel: React.FC<WidgetSidePanelProps> = ({ node, onUpdate, onClose }) => {
     // Local state for form values
     const [formData, setFormData] = useState<Partial<WidgetNode>>({ ...node });
-    const [isDirty, setIsDirty] = useState(false);
+    const [, setIsDirty] = useState(false);
 
     // Sync with node when selection changes
     useEffect(() => {
@@ -128,11 +128,10 @@ const WidgetSidePanel: React.FC<WidgetSidePanelProps> = ({ node, onUpdate, onClo
                                 </div>
 
                                 <Toggle
-                                    id="custom-override"
+                                    id="toggle-expert"
                                     labelText="Enable Custom Override"
                                     labelA="Off"
                                     labelB="On"
-                                    id="toggle-expert"
                                 />
 
                                 <p style={{ fontSize: '12px', color: '#8d8d8d', marginBottom: '0.5rem' }}>Widget Definition (Read-Only Stub)</p>
